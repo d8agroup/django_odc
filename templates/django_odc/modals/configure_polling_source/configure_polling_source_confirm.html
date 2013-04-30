@@ -1,0 +1,33 @@
+<div id="configure-polling-source-confirm">
+    <h4>
+        <a id="polling-source-confirm-save-and-activate-button" class="btn btn-info btn-small"><i class="icon-ok"></i> save and activate</a>
+        This source is now ready to use
+    </h4>
+    <div class="clearfix">
+        <img id="polling-source-confirm-source-image" src="{{ source.channel.images.128 }}" title="{{ source.channel.display_name_full }}"  class="tipped"/>
+        <div id="polling-source-confirm-analysis-container" class="clearfix">
+            {% if source.services %}
+                <h5>With the following analysis services</h5>
+                {% for service in source.services %}
+                    <div class="polling-source-confirm-analysis-service">
+                        <img src="{{ service.images.48 }}" title="{{ service.display_name_full }}" class="tipped" />
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="ui-state-info">
+                    <p>
+                        <i class="icon-star"></i> You have chosen not to add any additional analysis to this source
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <p class="display-name"><label>Name:</label>{{ source.display_name }}</p>
+    {% for element in source.channel.config.elements %}
+        {% if element.type == 'text' %}
+            <p class="element-text"><label>{{ element.display_name }}</label>{{ element.value }}</p>
+        {% endif %}
+    {% endfor %}
+    <a id="polling-source-confirm-save-button" class="btn btn-small"><i class="icon-save"></i> save but don't activate</a>
+    <a id="config-source-reconfigure-button" class="btn btn-small"><i class="icon-backward"></i> reconfigure</a>
+</div>

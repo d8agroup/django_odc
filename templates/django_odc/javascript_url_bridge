@@ -1,0 +1,3 @@
+{% for url in urls %}
+    var URL_{{ url.name }} = '{{ url.url }}';
+{% endfor %}

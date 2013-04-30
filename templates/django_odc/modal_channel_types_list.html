@@ -1,0 +1,7 @@
+{% load django_odc_tags %}
+
+{% for channel in channels %}
+    <div class="available-channel-type" data-channel="{{ channel|jsonify }}">
+        <img src="{{ channel.images.128 }}" />
+    </div>
+{% endfor %}

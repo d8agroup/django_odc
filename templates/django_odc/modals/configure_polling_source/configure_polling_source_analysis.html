@@ -1,0 +1,24 @@
+{% load django_odc_tags %}
+<div id="configure-polling-source-analysis">
+    <h4>
+        <a class="btn btn-info btn-small" id="save-polling-source-analysis-button">
+            <i class="icon-play"></i> confirm
+        </a>
+        What kind of analysis do you want to apply?
+    </h4>
+    <div id="service-types-list" class="clearfix">
+        {% for service in services %}
+            <div class="available-service-type {% if service.active %}active{% endif %}" data-service="{{ service|jsonify }}">
+                <img src="{{ service.images.64 }}" />
+                <span class="label label-success hide"><i class="icon-ok"></i> active</span>
+            </div>
+        {% endfor %}
+    </div>
+    <div id="service-details">
+        <span class="label hide" id="service-status-label-inactive"><i class="icon-off"></i> inactive</span>
+        <span class="label label-success hide" id="service-status-label-active"><i class="icon-ok"></i> active</span>
+        <p id="service-details-instructions">Mouse over a service to see its details and click one to select it</p>
+        <p id="service-details-display-name"></p>
+        <p id="service-details-description"></p>
+    </div>
+</div>

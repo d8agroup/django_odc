@@ -1,0 +1,16 @@
+<div id="post-adapter-test-results-container">
+    <h5>
+        Something went wrong!
+    </h5>
+    <div id="post-adapter-test-results-error-container">
+        {% if test_results.status_messages.errors %}
+            <div class="ui-state-error">
+                {% for error in test_results.status_messages.errors %}
+                    <p>
+                        <i class="icon-warning-sign"></i> {{ error }}
+                    </p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>

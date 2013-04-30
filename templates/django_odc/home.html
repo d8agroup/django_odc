@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load compress %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'django_odc/css/django_odc.css' %}"/>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript" src="{% static 'django_odc/js/vendor/jquery.bindWithDelay.js' %}"></script>
+    <script type="text/javascript" src="{% static 'django_odc/js/vendor/jquery.livequery.js' %}"></script>
+    <script type="text/javascript" src="{% url 'javascript_url_bridge' %}"></script>
+    <script type="text/javascript" src="{% static 'django_odc/js/site.js' %}"></script>
+    <script type="text/javascript" src="{% static 'django_odc/js/statistics_and_administration.js' %}"></script>
+    <script type="text/javascript" src="{% static 'django_odc/js/datasets.js' %}"></script>
+    <script type="text/javascript" src="{% static 'django_odc/js/dataset.js' %}"></script>
+    <script type="text/javascript" src="{% static 'django_odc/js/source.js' %}"></script>
+    <script type="text/javascript" src="{% static 'django_odc/js/modals/modal_channel_types.js' %}"></script>
+    <script type="text/javascript" src="{% static 'django_odc/js/modals/modal_configure_polling_source.js' %}"></script>
+    <script type="text/javascript" src="{% static 'django_odc/js/modals/modal_configure_post_adapter_source.js' %}"></script>
+    <script type="text/javascript" src="{% static 'django_odc/js/modals/modal_confirmation.js' %}"></script>
+    <script type="text/javascript" src="{% static 'django_odc/js/loading.js' %}"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+
+            //Init the site ui framework
+            $.django_odc_site.init();
+        })
+    </script>
+{% endblock %}
+
+{% block nav %}
+    <li class="active">
+        <a href="{% url 'odc_home' %}">
+            <i class="icon-hdd"></i> Your Data
+        </a>
+    </li>
+{% endblock %}
+
+{% block content %}
+    <div class="row-fluid">
+        <div id="your-datasets" class="span8">
+            <h2>Your Datasets <a class="btn btn-small btn-info" id="add-dataset-button"><i class="icon-plus-sign"></i> New dataset</a></h2>
+            <div id="datasets-container">
+                {% include 'django_odc/loading.html' %}
+            </div>
+        </div>
+        <div id="statistics" class="span4 ui-corner-all ui-state-default">
+            <div class="inner">
+                <div class="block">
+                    <h4>Aggregator Status</h4>
+                    <table id="aggregator-status-table">
+                        <tr>
+                            <th>
+                                <abbr title="Polling sources include Feeds">Polling Sources</abbr>
+                            </th>
+                            <td>
+                                <span class="label"><i class="icon-off"></i> inactive</span>
+                            </td>
+                            <td>
+                                <a id="aggregator-poll-now-button" class="btn btn-info btn-mini tipped" title="Click to manually refresh the polling sources now">
+                                    <i class="icon-refresh"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="block">
+                    <h4>Administration</h4>
+                    <table id="administration-table">
+                        <tr>
+                            <th><abbr title="This will kill all currently running sources.">Kill all running</abbr></th>
+                            <td>
+                                <a id="kill-all-source-button" class="btn btn-danger btn-mini tipped" title="Kill all running sources">
+                                    <i class="icon-remove"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="block">
+                        <div id="run-records">
+                            <h4>Aggregation History</h4>
+                            <div id="run-records-list"></div>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="hide">
+        {% include 'django_odc/modal_channel_types.html' %}
+        {% include 'django_odc/modal_confirmation.html' %}
+        {% include 'django_odc/modals/configure_polling_source/configure_polling_source.html' %}
+        {% include 'django_odc/modals/configure_post_adapter_source/configure_post_adapter_source.html' %}
+    </div>
+{% endblock %}

@@ -1,0 +1,44 @@
+<div id="config-source-test-results-passed">
+    <h3>
+        <i class="icon-ok"></i>
+        The test passed!
+        <a class="btn btn-info btn-small" id="config-source-confirm-button">
+            <i class="icon-play"></i> use this source
+        </a>
+    </h3>
+    <div class="clearfix">
+        <div id="results-items-container">
+            <h4>Sample results</h4>
+            <ul class="unstyled">
+                {% for item in test_results.results %}
+                    {% include 'django_odc/content_item.html' %}
+                {% endfor %}
+            </ul>
+        </div>
+        <div id="results-metadata-container">
+            {% if test_results.status_messages.infos %}
+                <h5>While the test passed there were some errors</h5>
+                <div class="ui-state-info">
+                    {% for info in test_results.status_messages.infos %}
+                        <p><i class="icon-warning-sign"></i> {{ info }}</p>
+                    {% endfor %}
+                </div>
+                <p>
+                    <small>
+                        You can use this source, but there may be problems now or in the future, such as missing items
+                        or malformed data.
+                    </small>
+                </p>
+                <a class="btn  btn-small" id="config-source-reconfigure-button">
+                    <i class="icon-backward"></i> reconfigure?
+                </a>
+            {% else %}
+                <h5>All the tests passed with no errors!</h5>
+            {% endif %}
+            <div id="results-metadata-stats" class="ui-state-default ui-corner-all">
+                <h5>Estimated Statistics</h5>
+                <p><abbr title="New Items Per Minute">NIPM</abbr> <em>TODO</em></p>
+            </div>
+        </div>
+    </div>
+</div>

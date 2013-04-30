@@ -1,0 +1,14 @@
+<li class="content-item clearfix">
+    <img src="{{ item.source.channel.images.32 }}" class="channel-image"/>
+    <div class="content-text">
+        {% if item.title %}
+            <p class="title">{{ item.title }}</p>
+        {% endif %}
+        {% for text in item.text %}
+            <p class="text">{{ text }}</p>
+        {% endfor %}
+    </div>
+    <div class="content-metadata ui-corner-all">
+        <p class="created">{{ item.created }}</p>
+    </div>
+</li>

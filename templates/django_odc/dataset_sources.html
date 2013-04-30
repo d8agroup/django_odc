@@ -1,0 +1,38 @@
+{% load django_odc_tags %}
+{% for source in sources %}
+    <div class="dataset-source" data-source="{{ source|jsonify }}">
+        <div class="dataset-source-actions hide ui-corner-all">
+            <a class="btn btn-info btn-mini tipped dataset-source-action-configure" title="configure"><i class="icon-cog"></i></a>
+            {% if source.status == 'inactive' %}
+                <a class="btn btn-info btn-mini tipped dataset-source-action-activate" title="activate"><i class="icon-ok"></i></a>
+            {% endif %}
+            {% if source.status == 'active' or source.status == 'running' %}
+                <a class="btn btn-info btn-mini tipped dataset-source-action-deactivate" title="deactivate"><i class="icon-off"></i></a>
+            {% endif %}
+            <a class="btn btn-danger btn-mini tipped dataset-source-action-delete" title="delete"><i class="icon-trash"></i></a>
+        </div>
+        <img src="{{ source.channel.images.128 }}" />
+        <div class="dataset-source-services-container clearfix">
+            {% if source.services %}
+                {% for service in source.services %}
+                    <div class="dataset-source-service">
+                        <img src="{{ service.images.24 }}" class="tipped" title="{{ service.display_name_full }}" />
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <p class="display_name">{{ source.display_name }}</p>
+        {% if source.status == 'unconfigured' %}
+            <span class="label"><i class="icon-off"></i> unconfigured</span>
+        {% endif %}
+        {% if source.status == 'inactive' %}
+            <span class="label"><i class="icon-off"></i> inactive</span>
+        {% endif %}
+        {% if source.status == 'active' %}
+            <span class="label label-success"><i class="icon-ok"></i> active</span>
+        {% endif %}
+        {% if source.status == 'running' %}
+            <span class="label label-success"><i class="icon-spin icon-spinner"></i> running</span>
+        {% endif %}
+    </div>
+{% endfor %}

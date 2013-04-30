@@ -1,0 +1,27 @@
+<div id="configure-post-adapter-source-test">
+    <h4>
+        This source is now in test mode
+    </h4>
+    <div class="ui-state-info">
+        <p>
+            <i class="icon-download"></i> Download instruction on using this source <a href="{% url 'post_adapter_source_instructions' source.id %}" target="_blank">here</a>
+        </p>
+    </div>
+    <p>
+        To begin testing this source, start posing data to the address below:
+    </p>
+    <p>
+        <strong>{{ full_adapter_url }}</strong>
+    </p>
+    <p>
+        <span id="post-adapter-source-test-feedback" class="label">
+            <i class="icon-spin icon-spinner"></i>  <span id="post-adapter-source-test-feedback-message">0 items received so far</span>
+        </span>
+    </p>
+    <p id="post-adapter-source-test-actions">
+        <a id="post-adapter-source-test-reconfigure" class="btn btn-small"><i class="icon-backward"></i> reconfigure</a>
+        <a id="post-adapter-source-test-skip" class="btn btn-small"><i class="icon-forward"></i> skip</a>
+        <a id="post-adapter-source-test-repeat" class="btn btn-small disabled"><i class="icon-repeat"></i> restart</a>
+        <a id="post-adapter-source-test-confirm" class="btn btn-small btn-info disabled"><i class="icon-play"></i> configure analysis</a>
+    </p>
+</div>

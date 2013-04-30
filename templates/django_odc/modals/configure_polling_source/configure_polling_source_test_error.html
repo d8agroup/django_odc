@@ -1,0 +1,15 @@
+<div id="config-source-test-results-error">
+    <h4>
+        <a id="config-source-reconfigure-button" class="btn btn-small"><i class="icon-backward"></i> reconfigure</a>
+        Something went wrong
+    </h4>
+    {% if test_results.status_messages.errors %}
+        <div class="ui-state-error">
+            {% for error in test_results.status_messages.errors %}
+                <p>
+                    <i class="icon-warning-sign"></i> {{ error }}
+                </p>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>

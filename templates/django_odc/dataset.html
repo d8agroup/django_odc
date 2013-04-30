@@ -1,0 +1,51 @@
+{% load django_odc_tags %}<div id="dataset_{{ dataset.id }}" class="dataset expanded" data-dataset='{{ dataset.to_json }}'>
+    <div class="dataset-header ui-corner-top ui-state-default">
+        <div class="row-fluid">
+            <div class="span8">
+                <input type="text" name="dataset_name" class="dataset-name as-label" value="{{ dataset.display_name }}" placeholder="Start typing here to give me a name"/>
+            </div>
+            <div class="dataset-header-actions span4">
+                <a class="remove-dataset-button btn btn-info btn-small pull-right">
+                    <i class="icon-trash"></i>
+                </a>
+                <a class="toggle-dataset-button btn btn-info btn-small pull-right">
+                    <i class="icon-caret-down expand-icon"></i>
+                    <i class="icon-caret-up collapse-icon"></i>
+                </a>
+            </div>
+        </div>
+        <div class="row-fluid">
+            <div class="span2">
+                <p class="dataset-status">
+                    <span class="label label-success status-active"><i class="icon-check"></i> active</span>
+                    <span class="label label status-inactive"><i class="icon-off"></i> inactive</span>
+                    <span class="label label-success status-running"><i class="icon-spin icon-spinner"></i> running</span>
+                    <span class="label label-info status-unconfigured"><i class="icon-star"></i> unconfigured</span>
+                    <span class="label label-important status-error"><i class="icon-warning-sign"></i> in error</span>
+                </p>
+            </div>
+            <div class="span8">
+                <div class="dataset-statistics-summary"></div>
+            </div>
+            <div class="span2">
+                <span class="dataset-saved label label-success hide"><i class="icon-check"></i> saved</span>
+            </div>
+        </div>
+    </div>
+    <div class="dataset-content ui-corner-bottom">
+        <div class="inner">
+            <div class="dataset-messages">
+                <div class="dataset-info-messages ui-state-info ui-corner-all hide"></div>
+                <div class="dataset-error-messages ui-state-error ui-corner-all hide"></div>
+            </div>
+            <div class="dataset-sources ui-corner-all">
+                <h4>
+                    <a class="btn btn-small btn-info add-source-button"><i class="icon-plus-sign"></i> Add a source</a>
+                    Sources contributing to this dataset
+                </h4>
+                <div class="dataset-sources-list">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,34 @@
+<form method="POST" class="form-horizontal" id="configure-polling-source-config">
+    <div class="elements-container">
+        <fieldset>
+            <input type="hidden" name="source_id" value="{{ source.id }}" />
+
+            {% if source.channel.config.legend %}
+                <legend>{{ source.channel.config.legend }}</legend>
+            {% endif %}
+            {% if source.channel.config.help_message %}
+                <p class="help-block">{{ source.channel.config.help_message }}</p>
+            {% endif %}
+            {% if source.status == 'unconfigured' and source.status_messages.errors %}
+                <div class="ui-state-error ui-corner-all">
+                    {% for error in source.status_messages.errors %}
+                        <p><i class="icon-warning-sign"></i> {{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div class="control-group">
+                <label class="control-label">A name for this source</label>
+                <div class="controls">
+                    <input type="text" name="display_name" value="{{ source.display_name }}" />
+                    <span class="help-block">This is required and needs to be unique within this dataset.</span>
+                </div>
+            </div>
+            {% for element in source.channel.config.elements %}
+                {% ifequal element.type 'text' %}
+                    {% include 'django_odc/forms/textbox.html' %}
+                {% endifequal %}
+            {% endfor %}
+        </fieldset>
+    </div>
+    <button id="submit-source-config-button" class="btn btn-info"><i class="icon-ok"></i> Submit</button>
+</form>
