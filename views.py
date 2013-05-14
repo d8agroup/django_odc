@@ -1,4 +1,5 @@
 import json
+import sys
 
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -6,11 +7,12 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
 from django.template.loader import render_to_string
+from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 
 from django_odc.models import Dataset, Source, SourceTestResult
 from django_odc.settingsbridge import access_settings
-from django_odc.utils import async
+from django_odc.utils import async, format_error
 
 
 @login_required(login_url='/admin')
@@ -30,13 +32,19 @@ def aggregate_datasets_for_current_user(request):
 
 
 def aggregate_all(request, api_key):
+    started = now()
     if api_key != access_settings('ODC_API_KEY'):
-        return HttpResponse(json.dumps({'status': 'error', 'errors': ['Invalid api key']}))
+        return HttpResponse(json.dumps({'time_stamp': '%s' % started, 'status': 'error', 'errors': ['Invalid api key']}))
     aggregated_sources = []
-    for d in Dataset.objects.filter(status='active').all():
-        d.aggregate_polling_sources()
-        aggregated_sources += [s.guid for s in d.source_set.all()]
-    return HttpResponse(json.dumps({'status': 'ok'}))
+    try:
+        for d in Dataset.objects.filter(status='active').all():
+            d.aggregate_polling_sources()
+            aggregated_sources += [s.guid for s in d.source_set.all()]
+        return HttpResponse(json.dumps({'time_stamp': '%s' % started, 'status': 'ok'}))
+    except Exception, e:
+        error = format_error(e, sys.exc_info())
+        return HttpResponse(json.dumps({'time_stamp': '%s' % started, 'status': 'error', 'errors': [error]}))
+
 
 @login_required(login_url='/admin')
 def loading(request):
