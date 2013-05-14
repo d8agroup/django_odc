@@ -5,7 +5,8 @@ _DEFAULT_SETTINGS = {
     'ODC_DATACONTEXT_INIT_CONFIG': {
         # This must be overwritten in your settings file
         #'solr_url': 'THIS MUST BE OVERWRITTEN IN YOUR SETTINGS FILE'
-    }
+    },
+    'ODC_API_KEY': '12345'
 }
 
 

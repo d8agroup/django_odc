@@ -74,4 +74,7 @@ urlpatterns = patterns(
     url(r'aggregate_for_user$',
         views.aggregate_datasets_for_current_user, name='aggregate_datasets_for_current_user'),
 
+    url(r'api/aggregate_all/(?P<api_key>\w+)$',
+        views.aggregate_all, name='aggregate_all'),
+
     url(r'(?P<dataset_id>\w*)$', views.home, name='odc_home'))

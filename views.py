@@ -9,6 +9,7 @@ from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 
 from django_odc.models import Dataset, Source, SourceTestResult
+from django_odc.settingsbridge import access_settings
 from django_odc.utils import async
 
 
@@ -27,6 +28,15 @@ def aggregate_datasets_for_current_user(request):
         d.aggregate_polling_sources()
     return HttpResponse('')
 
+
+def aggregate_all(request, api_key):
+    if api_key != access_settings('ODC_API_KEY'):
+        return HttpResponse(json.dumps({'status': 'error', 'errors': ['Invalid api key']}))
+    aggregated_sources = []
+    for d in Dataset.objects.filter(status='active').all():
+        d.aggregate_polling_sources()
+        aggregated_sources += [s.guid for s in d.source_set.all()]
+    return HttpResponse(json.dumps({'status': 'ok'}))
 
 @login_required(login_url='/admin')
 def loading(request):
