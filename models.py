@@ -3,6 +3,7 @@ import inspect
 import json
 import re
 import sys
+import uuid
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -111,12 +112,13 @@ class Dataset(models.Model):
 
     def to_dict(self):
         return {
-            'id': self.id, # The id of the dataset
-            'display_name': self.display_name, # The dataset display name
-            'status': self.status, # The status
-            'status_messages': self.status_messages, # Get the un serialized status messages
-            'created': self.created.strftime('%X'), # Format time as local
-            'modified': self.modified.strftime('%X')}  # Format time as local
+            'id': self.id,  # The id of the dataset
+            'display_name': self.display_name,  # The dataset display name
+            'status': self.status,  # The status
+            'status_messages': self.status_messages,  # Get the un serialized status messages
+            'created': self.created.strftime('%c'),  # Format time as local
+            'modified': self.modified.strftime('%c  '),  # Format time as local
+            'sources': self.sources_configuration()}  # All the dataset sources
 
     def to_json(self):
         # Json serialize the bits we want in the format we want
@@ -147,13 +149,13 @@ class Dataset(models.Model):
             return
             # Call the polling aggregate function on each of the sources
         for source in sources:
-            self.send_data_to_datasetore(source.aggregate_polling_source())
+            self.send_data_to_datasetore(source, source.aggregate_polling_source())
 
-    def send_data_to_datasetore(self, data):
+    def send_data_to_datasetore(self, source, data):
         # Get the current data context
         data_context = self._get_data_context()
         # Call the push data function on the data context
-        data_context.push(data)
+        data_context.push(source, data)
 
     def kill(self):
         # If this is not running then just quit
@@ -176,13 +178,43 @@ class Dataset(models.Model):
         # Return the list
         return run_records
 
-    def get_statistics(self):
+    def get_statistics(self, format_for_display=False):
+        # Format Mappings
+        mappings = {
+            'total_items': {
+                'display_name': 'Total items',
+                'abbr': 'Items'},
+            'aggregate_items_per_minute': {
+                'display_name': 'New Items Collected Per Minute',
+                'abbr': 'IPM'},
+            'aggregate_items_per_day': {
+                'display_name': 'New Items Collected Per Day',
+                'abbr': 'IPD'}}
         # Get the current data context
         data_context = self._get_data_context()
         # Get the raw statistics from the data context
         statistics = data_context.dataset_statistics(self)
-        # Return them
-        return statistics
+        # if not format them then Return them
+        if not format_for_display:
+            return statistics
+        # Build the formatted list
+        formatted_stats = []
+        # Add the stats to the formatted list
+        for key, value in statistics.items():
+            formatted_stat = mappings.get(key, {'display_name': key, 'abbr': key})
+            formatted_stat['value'] = value
+            formatted_stats.append(formatted_stat)
+        # Return the formatted array
+        return formatted_stats
+
+    def run_query(self, search_data):
+        # Get the data context
+        data_context = self._get_data_context()
+        # Call run query
+        results = data_context.run_query(search_data)
+        # TODO: May add formatting and extensions here
+        # Return the results
+        return results
 
     def _get_data_context(self):
         # Get the dynamic data context init config
@@ -197,7 +229,9 @@ class Source(models.Model):
     _status_messages = models.TextField(default='')  # Any status messages for the source
     _services = models.TextField(default='[]')  # The json serialized services collection
     display_name = models.TextField(default='')  # A user friendly name provided by the user
-    dataset = models.ForeignKey(Dataset)  # Link to the parent dataset
+    guid = models.TextField(default='')  # An editable id that allows after the fact data context connection
+    user = models.ForeignKey(User)  # Relationship to a single user
+    datasets = models.ManyToManyField(Dataset)  # Relationship to many datasets
     status = models.TextField(default='unconfigured')  # The status of the data point
     created = models.DateTimeField()  # When it was Created
     modified = models.DateTimeField()  # When it was modified
@@ -206,17 +240,22 @@ class Source(models.Model):
     is_service_regex = re.compile(r'^[A-Z]\w+Service$')  # Regex for extracting only services from the services module
 
     @classmethod
-    def Create(cls, dataset, channel_type):
-        # Create a new source with the args plus some defaults
+    def Create(cls, user, dataset, channel_type):
+        # Create a new source with some defaults
         source = Source(
-            dataset=dataset, # The parent dataset
-            created=datetime.datetime.now())  # Created now
+            user=user,  # Add the parent user
+            created=datetime.datetime.now(),  # Created now
+            guid='%s' % uuid.uuid4())
         # Add the channel
         source.channel = Source._GetChannelByType(channel_type).configuration
         # Add the status messages template
         source.status_messages = {'errors': [], 'infos': []}
         # Call save override
         source.save()
+        # Associate with the dataset
+        source.datasets.add(dataset)
+        # Call save again skipping any validation
+        source.save(skip_validation=True)
         # Return new source
         return source
 
@@ -336,14 +375,18 @@ class Source(models.Model):
             # Check that a display name has been provided
             if not self.display_name:
                 status_messages['errors'].append('You need to provide a name for this source.')
-                # Check that the display name is unique for this dataset
+                # Check that the display name is unique
             is_unique = len(
-                Source.objects.filter(dataset=self.dataset).filter(display_name=self.display_name).all()) < 2
+                Source.objects.filter(display_name=self.display_name).all()) < 2
             if self.display_name and not is_unique:
                 # And f not then add an error saying so
                 status_messages['errors'].append('You already have a source with that name in this dataset.')
-                # Call the channel to validate the config
-            status_messages['errors'] += self._underlying_channel().ValidateAndReturnErrors(self.channel)
+            # Extract out the channel configuration so it can be amended by the channel validation method
+            channel_configuration = self.channel
+            # Call the channel to validate the config
+            status_messages['errors'] += self._underlying_channel().ValidateAndReturnErrors(channel_configuration)
+            # Save back any updated configuration
+            self.channel = channel_configuration
             # If there are errors returned from the underlying channel
             if status_messages['errors']:
                 # Set the state to unconfigured
@@ -360,6 +403,8 @@ class Source(models.Model):
         if updated_data:
             # Update the display name
             self.display_name = updated_data.get('display_name', '')
+            # Update the GUID
+            self.guid = updated_data.get('guid', self.guid)
             # Extract the config
             configuration = self.channel
             # Get a handle on the elements in the config
@@ -389,10 +434,10 @@ class Source(models.Model):
     def to_dict(self):
         return {
             'id': self.id,
+            'guid': self.guid,
             'display_name': self.display_name,
             'services': self.services,
             'status': self.status,
-            'dataset': json.loads(self.dataset.to_json()),
             'channel': self._underlying_channel().configuration}
 
     def to_json(self):
@@ -427,8 +472,11 @@ class Source(models.Model):
             record = run_records[0]
         # Call the channel to update the test
         data = self._underlying_channel().receive_post_data(self, self.channel, record, raw_data)
+        # Call the services for augmentation
+        data = self._apply_services_to_data(data, record)
         # Send this data to the dataset
-        self.dataset.send_data_to_datasetore(data)
+        for dataset in self.datasets.all():
+            dataset.send_data_to_datasetore(self, data)
         # Return an ok signal
         return {'status': 'ok'}
 
@@ -495,8 +543,8 @@ class Source(models.Model):
         self.status = 'running'
         # Save this
         self.save(skip_validation=True)
-        # Force the parent dataset to pick up the running signal
-        self.dataset.save()
+        # Force all parent datasets to pick up the running signal
+        [d.save() for d in self.datasets.all()]
         # Get any currently running run records
         run_records = self.sourcerunrecord_set.filter(status='running').all()
         # If there are any ill them and the runs
@@ -508,8 +556,12 @@ class Source(models.Model):
         try:
             # Get a handel on the underlying channel
             channel = self._underlying_channel()
+            # Extract out the configuration so it can be saved back with any changes from the run
+            channel_configuration = self.channel
             # Call the channel to return any new data
-            data = channel.run_polling_aggregation(self, self.channel, record)
+            data = channel.run_polling_aggregation(self, channel_configuration, record)
+            # Save back the configuration
+            self.channel = channel_configuration
         except Exception, e:
             record.update(
                 'error',
@@ -519,15 +571,14 @@ class Source(models.Model):
         finally:
             if record.status == 'running':
                 record.update('error', {'errors': ['This run did not finish correctly'], 'infos': []})
-
-        # TODO: call the services for augmentation
-
+        # Call the services for augmentation
+        data = self._apply_services_to_data(data, record)
         # Set the status back to active
         self.status = 'active'
         # Save yourself
         self.save()
-        # Force the parent dataset to pick up the active signal
-        self.dataset.save()
+        # Force all parent datasets to pick up the active signal
+        [d.save() for d in self.datasets.all()]
         # Return the results to the dataset
         return data
 
@@ -551,6 +602,29 @@ class Source(models.Model):
     def _underlying_channel(self):
         channel_type = self.channel['type']
         return Source._GetChannelByType(channel_type)
+
+    def _get_service_by_service_type(self, service_type):
+        # Get all the services
+        all_services = self._AllAvailableServices(self.channel['data_type'])
+        # Extract the service that matches the service type
+        candidate_services = [s for s in all_services if s.configuration['type'] == service_type]
+        service = candidate_services[0] if candidate_services else None
+        # Return the service
+        return service
+
+    def _apply_services_to_data(self, data, run_record):
+        for service in self.services:
+            service_object = self._get_service_by_service_type(service['type'])
+            if service_object:
+                try:
+                    data = service_object.run(service, data)
+                except Exception, e:
+                    run_record.update(
+                        'error',
+                        {'errors': [
+                            'There was a system error in this run',
+                            format_error(e, sys.exc_info())], 'infos': []})
+        return data
 
 
 class SourceTestResult(models.Model):
@@ -694,7 +768,10 @@ class SourceRunRecord(models.Model):
 
     def update(self, status, status_messages):
         self.status = status
-        self.status_messages = status_messages
+        for error in status_messages.get('errors', []):
+            self.status_messages['errors'].append(error)
+        for info in status_messages.get('infos', []):
+            self.status_messages['infos'].append(info)
         self.modified = now()
         self.save()
 

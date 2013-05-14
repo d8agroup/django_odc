@@ -31,8 +31,23 @@
         return $('#modal-configure-post-adapter-source').data('source_configuration');
     };
 
+    //Store dataset id
+    $.django_odc_modal_configure_post_adapter_source.set_dataset_id = function(dataset_id) {
+
+        $('#modal-configure-post-adapter-source').data('dataset_id', dataset_id);
+    };
+
+    //Get dataset id
+    $.django_odc_modal_configure_post_adapter_source.get_dataset_id = function() {
+
+        return $('#modal-configure-post-adapter-source').data('dataset_id');
+    };
+
     //Open with channel configuration - when a new source is being built
     $.django_odc_modal_configure_post_adapter_source.open_with_channel = function(channel) {
+
+        //Set the dataset id
+        $.django_odc_modal_configure_post_adapter_source.set_dataset_id(channel.dataset_id);
 
         //Build the url to create a source from this channel config
         var url = URL_POST_ADAPTER_SOURCE_CREATE
@@ -78,7 +93,7 @@
         if (prevent_dataset_update == null || !prevent_dataset_update) {
 
             //Get the dataset id
-            var dataset_id = $.django_odc_modal_configure_post_adapter_source.get_source_configuration().dataset.id;
+            var dataset_id = $.django_odc_modal_configure_post_adapter_source.get_dataset_id();
 
             //Call the list refresh
             $.django_odc_datasets.update_dataset(dataset_id);
@@ -473,11 +488,14 @@
                     //Call the api to activate the source
                     $.get(URL_SOURCE_ACTIVATE.replace('SOURCE_ID', source.id), function(){
 
+                        //Get the dataset id
+                        var dataset_id = $.django_odc_modal_configure_post_adapter_source.get_dataset_id();
+
                         //Close the modal preventing the normal updat
                         $.django_odc_modal_configure_post_adapter_source.close(true);
 
                         //Update the dataset object
-                        $.django_odc_datasets.update_dataset(source.dataset.id);
+                        $.django_odc_datasets.update_dataset(dataset_id);
                     });
                 });
 
@@ -490,11 +508,14 @@
                     //Call the api to activate the source
                     $.get(URL_SOURCE_DEACTIVATE.replace('SOURCE_ID', source.id), function(){
 
+                        //Get the dataset id
+                        var dataset_id = $.django_odc_modal_configure_post_adapter_source.get_dataset_id();
+
                         //Close the modal prventing the normal dataset update
                         $.django_odc_modal_configure_post_adapter_source.close(true);
 
                         //Update the dataset object
-                        $.django_odc_datasets.update_dataset(source.dataset.id);
+                        $.django_odc_datasets.update_dataset(dataset_id);
                     });
                 });
 

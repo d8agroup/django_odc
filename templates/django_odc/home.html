@@ -3,6 +3,7 @@
 {% load compress %}
 
 {% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'django_odc/css/ml_base.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'django_odc/css/django_odc.css' %}"/>
 {% endblock %}
 
@@ -24,49 +25,48 @@
         $(document).ready(function(){
 
             //Init the site ui framework
-            $.django_odc_site.init();
+            $.django_odc_site.init({focus_dataset_id: '{{ focus_on_dataset_id }}'});
         })
     </script>
 {% endblock %}
 
-{% block nav %}
-    <li class="active">
-        <a href="{% url 'odc_home' %}">
-            <i class="icon-hdd"></i> Your Data
-        </a>
-    </li>
-{% endblock %}
-
 {% block content %}
     <div class="row-fluid">
-        <div id="your-datasets" class="span8">
-            <h2>Your Datasets <a class="btn btn-small btn-info" id="add-dataset-button"><i class="icon-plus-sign"></i> New dataset</a></h2>
+        <div id="your-datasets" class="span6">
+            <h2>Your Datasets <a class="btn btn-small" id="add-dataset-button">add a dataset</a></h2>
             <div id="datasets-container">
                 {% include 'django_odc/loading.html' %}
             </div>
         </div>
-        <div id="statistics" class="span4 ui-corner-all ui-state-default">
-            <div class="inner">
-                <div class="block">
-                    <h4>Aggregator Status</h4>
-                    <table id="aggregator-status-table">
-                        <tr>
-                            <th>
-                                <abbr title="Polling sources include Feeds">Polling Sources</abbr>
-                            </th>
-                            <td>
-                                <span class="label"><i class="icon-off"></i> inactive</span>
-                            </td>
-                            <td>
-                                <a id="aggregator-poll-now-button" class="btn btn-info btn-mini tipped" title="Click to manually refresh the polling sources now">
-                                    <i class="icon-refresh"></i>
-                                </a>
-                            </td>
-                        </tr>
-                    </table>
+        <div class="span3">
+            <h2>All your sources</h2>
+
+        </div>
+        <div id="statistics" class="span3">
+            <div class="container-with-header">
+                <h2 class="header">Aggregator Status</h2>
+                <div class="content">
+                <table id="aggregator-status-table">
+                    <tr>
+                        <th>
+                            <abbr title="Polling sources include Feeds">Polling Sources</abbr>
+                        </th>
+                        <td>
+                            <span class="label" id="aggregator-poll-now-label-inactive"><i class="icon-off"></i> inactive</span>
+                            <span class="label label-success hide" id="aggregator-poll-now-label-running"><i class="icon-spin icon-spinner"></i> running</span>
+                        </td>
+                        <td>
+                            <a id="aggregator-poll-now-button" class="btn btn-mini tipped" title="Click to manually refresh the polling sources now">
+                                <i class="icon-refresh"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </table>
                 </div>
-                <div class="block">
-                    <h4>Administration</h4>
+            </div>
+            <div class="container-with-header">
+                <h2 class="header">Administration</h2>
+                <div class="content">
                     <table id="administration-table">
                         <tr>
                             <th><abbr title="This will kill all currently running sources.">Kill all running</abbr></th>
@@ -78,11 +78,11 @@
                         </tr>
                     </table>
                 </div>
-                <div class="block">
-                        <div id="run-records">
-                            <h4>Aggregation History</h4>
-                            <div id="run-records-list"></div>
-                        </div>
+            </div>
+            <div class="container-with-header" id="run-records">
+                <h2 class="header">Aggregation History</h2>
+                <div class="content">
+                    <div id="run-records-list"></div>
                 </div>
             </div>
         </div>

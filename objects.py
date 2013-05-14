@@ -2,10 +2,13 @@ import uuid
 import datetime
 from django.utils.timezone import now
 
+
 class ContentItemAuthor(object):
-    display_name = ''
-    id = ''
-    profile_image_url = ''
+
+    def __init__(self):
+        self.display_name = ''
+        self.id = ''
+        self.profile_image_url = ''
 
     @classmethod
     def FromDict(cls, values):
@@ -22,15 +25,20 @@ class ContentItemAuthor(object):
 
 
 class ContentItem(object):
-    id = '%s' % uuid.uuid4()
-    source = {}
-    author = ContentItemAuthor()
-    title = ''
-    text = []
-    link = ''
-    language = ''  # 2 character ISO language code
-    created = now()
-    metadata = []
+
+    def __init__(self, source_guid=None):
+        self.id = '%s' % uuid.uuid4()
+        self.source = {}
+        self.author = ContentItemAuthor()
+        self.title = ''
+        self.text = []
+        self.link = ''
+        self.language = ''  # 2 character ISO language code
+        self.created = now()
+        self.metadata = []
+        if source_guid:
+            from django_odc.models import Source
+            self.source = Source.objects.get(guid=source_guid).to_dict()
 
     @classmethod
     def FromDict(cls, values):

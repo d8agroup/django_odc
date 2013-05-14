@@ -20,7 +20,14 @@
                 <label class="control-label">A name for this source</label>
                 <div class="controls">
                     <input type="text" name="display_name" value="{{ source.display_name }}" />
-                    <span class="help-block">This is required and needs to be unique within this dataset.</span>
+                    <span class="help-block">This is required and needs to be unique across all your datasets.</span>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">The GUID of the source</label>
+                <div class="controls">
+                    <input type="text" name="guid" value="{{ source.guid }}" />
+                    <span class="help-block">You should only change this if you are <strong>really</strong> sure you know what you are doing.</span>
                 </div>
             </div>
             {% for element in source.channel.config.elements %}
@@ -30,5 +37,5 @@
             {% endfor %}
         </fieldset>
     </div>
-    <button id="submit-source-config-button" class="btn btn-info"><i class="icon-ok"></i> Submit</button>
+    <button id="submit-source-config-button" class="btn"><i class="icon-ok"></i> Submit</button>
 </form>

@@ -5,24 +5,19 @@
     $.django_odc_site = {};
 
     //Main function to init the site wide ui framework
-    $.django_odc_site.init = function() {
+    $.django_odc_site.init = function(focus_dataset_id) {
 
         //Instance the site around the current body element
-        $('body').django_odc_site();
-
-        //Set up any side wide live attach
-        $('.tipped').livequery(function(){
-            $(this).tooltip();
-        })
+        $('body').django_odc_site(focus_dataset_id);
     };
 
     /******************************************************************************************************************/
     /* Instance Functions */
     var methods = {
-        init : function() {
+        init : function(focus_dataset_id) {
 
             //Init the your datasets section
-            $('#your-datasets').django_odc_datasets();
+            $('#your-datasets').django_odc_datasets(focus_dataset_id);
 
             //Init the admin functions
             $('#statistics').django_odc_statistics_and_administration();

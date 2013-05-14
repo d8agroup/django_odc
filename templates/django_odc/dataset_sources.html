@@ -1,13 +1,13 @@
 {% load django_odc_tags %}
 {% for source in sources %}
-    <div class="dataset-source" data-source="{{ source|jsonify }}">
+    <div class="dataset-source" data-source="{{ source|jsonify }}" data-dataset_id="{{ dataset.id }}">
         <div class="dataset-source-actions hide ui-corner-all">
-            <a class="btn btn-info btn-mini tipped dataset-source-action-configure" title="configure"><i class="icon-cog"></i></a>
+            <a class="btn btn-mini tipped dataset-source-action-configure" title="configure"><i class="icon-cog"></i></a>
             {% if source.status == 'inactive' %}
-                <a class="btn btn-info btn-mini tipped dataset-source-action-activate" title="activate"><i class="icon-ok"></i></a>
+                <a class="btn btn-mini tipped dataset-source-action-activate" title="activate"><i class="icon-ok"></i></a>
             {% endif %}
             {% if source.status == 'active' or source.status == 'running' %}
-                <a class="btn btn-info btn-mini tipped dataset-source-action-deactivate" title="deactivate"><i class="icon-off"></i></a>
+                <a class="btn btn-mini tipped dataset-source-action-deactivate" title="deactivate"><i class="icon-off"></i></a>
             {% endif %}
             <a class="btn btn-danger btn-mini tipped dataset-source-action-delete" title="delete"><i class="icon-trash"></i></a>
         </div>
@@ -21,7 +21,7 @@
                 {% endfor %}
             {% endif %}
         </div>
-        <p class="display_name">{{ source.display_name }}</p>
+        <p class="display-name">{{ source.display_name }}</p>
         {% if source.status == 'unconfigured' %}
             <span class="label"><i class="icon-off"></i> unconfigured</span>
         {% endif %}

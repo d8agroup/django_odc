@@ -54,11 +54,17 @@
 
                     //Open the configure polling source modal
                     $.django_odc_modal_configure_polling_source.open(source);
+
+                    //Set the dataset id
+                    $.django_odc_modal_configure_polling_source.set_dataset_id(source_container.data('dataset_id'));
                 }
                 if (source.channel.aggregation_type == 'post_adapter'){
 
                     //This is a post adapter type channel so open the right modal
                     $.django_odc_modal_configure_post_adapter_source.open(source);
+
+                    //Set the dataset id
+                    $.django_odc_modal_configure_post_adapter_source.set_dataset_id(source_container.data('dataset_id'));
                 }
             });
 
@@ -91,7 +97,7 @@
                             dataset_container.django_odc_loading('remove');
 
                             //Update the dataset object
-                            $.django_odc_datasets.update_dataset(source.dataset.id);
+                            $.django_odc_datasets.update_dataset(source_container.data('dataset_id'));
                         });
                     }, 1000);
                 };
@@ -136,7 +142,7 @@
                         dataset_container.django_odc_loading('remove');
 
                         //Update the dataset object
-                        $.django_odc_datasets.update_dataset(source.dataset.id);
+                        $.django_odc_datasets.update_dataset(source_container.data('dataset_id'));
                     });
                 }, 1000);
             });
@@ -168,7 +174,7 @@
                         dataset_container.django_odc_loading('remove');
 
                         //Update the dataset object
-                        $.django_odc_datasets.update_dataset(source.dataset.id);
+                        $.django_odc_datasets.update_dataset(source_container.data('dataset_id'));
                     });
                 }, 1000);
             })

@@ -66,7 +66,7 @@
     /******************************************************************************************************************/
     /* Instance Functions */
     var methods = {
-        init : function() {
+        init : function(data) {
 
             //Get a handle on the container
             var container = $(this);
@@ -75,7 +75,7 @@
             container.django_odc_datasets('attach_event_handlers');
 
             //Reload the dataset list
-            container.django_odc_datasets('reload_dataset_list');
+            container.django_odc_datasets('reload_dataset_list', data.focus_dataset_id);
         },
         attach_event_handlers: function() {
 
@@ -92,7 +92,7 @@
                 $.django_odc_datasets.add_new_dataset();
             });
         },
-        reload_dataset_list: function(){
+        reload_dataset_list: function(focus_dataset_id){
 
             //Get a handle on the container
             var container = $(this);
@@ -103,8 +103,15 @@
                 //Datasetify all the datasets
                 $('.dataset').each(function(){
                     $(this).django_odc_dataset();
-                    $(this).find('.toggle-dataset-button').click();
+
+                    //Close all datasets unless its the focus one
+                    if ($(this).data('dataset').id != focus_dataset_id)
+                        $(this).find('.toggle-dataset-button').click();
                 });
+
+                //If there is a focus_dataset_id then scroll to it
+                if (focus_dataset_id != null && $('#dataset_' + focus_dataset_id).length > 0)
+                    $('html, body').scrollTop($('#dataset_' + focus_dataset_id).offset().top - 60);
             });
 
         },

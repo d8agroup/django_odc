@@ -1,6 +1,4 @@
-#statistics .inner { padding:10px; }
-#statistics .block { margin-bottom:30px; padding-left:10px;}
-#statistics .block h4 { position:relative; left:-10px; color:#888; }
+#statistics { font-size:90%;}
 #aggregator-status-table { width: 100%; }
 #aggregator-status-table th { text-align: left;}
 #aggregator-status-table .btn { float:right;}
@@ -77,7 +75,7 @@ h4 > .btn    { float:right; font-weight:normal; position:relative; bottom:3px; }
 .dataset-source-actions             { position:absolute; right:13px; top:13px; padding:5px; background-color:rgba(256,256,256,0.6);  text-align:right;}
 .dataset-source p                   { margin:0; padding:0; }
 .dataset-source-services-container  { position:absolute; top:100px; left:13px; width:100px; }
-.dataset-source-service             { float:left;}
+.dataset-source-service             { float:left; margin-right:5px;}
 
 .no-dataset-sources                     { margin-top:30px;}
 .no-dataset-sources i.icon-arrow-up     { float:right; font-size:58px; padding-right:15px; color:#888; }
@@ -137,8 +135,8 @@ h4 > .btn    { float:right; font-weight:normal; position:relative; bottom:3px; }
 #results-metadata-stats { margin-top:10px; padding:5px;}
 #config-source-test-results-error .ui-state-error { margin-top:30px;}
 #configure-polling-source-analysis { width:520px; margin: 0 auto; }
-#service-types-list { overflow:scroll; overflow-y:hidden; white-space:nowrap; height:115px;}
-.available-service-type { width:64px; height:90px; overflow:hidden; cursor:pointer; opacity:0.5; float:left; margin:10px; position:relative; }
+#service-types-list { overflow:scroll; overflow-y:hidden; white-space:nowrap; height:125px;}
+.available-service-type { width:64px; height:100px; overflow:hidden; cursor:pointer; opacity:0.5; float:left; margin:10px; position:relative; }
 .available-service-type:hover { opacity:1; }
 .available-service-type.active { opacity:1; }
 .available-service-type .label { display:none; font-size:80%; margin:5px auto 0; width:50px;}

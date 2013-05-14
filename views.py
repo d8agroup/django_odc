@@ -13,8 +13,11 @@ from django_odc.utils import async
 
 
 @login_required(login_url='/admin')
-def home(request):
-    return render_to_response('django_odc/home.html', context_instance=RequestContext(request))
+def home(request, dataset_id=None):
+    return render_to_response(
+        'django_odc/home.html',
+        {'focus_on_dataset_id':dataset_id},
+        context_instance=RequestContext(request))
 
 
 def aggregate_datasets_for_current_user(request):
@@ -234,7 +237,7 @@ def dataset_sources(request, dataset_id):
         # Return the empty template
         return render_to_response('django_odc/dataset_no_sources.html')
     # Else render the sources and return t he template
-    return render_to_response('django_odc/dataset_sources.html', {'sources': sources})
+    return render_to_response('django_odc/dataset_sources.html', {'sources': sources, 'dataset': dataset})
 
 
 @login_required(login_url='/admin')
@@ -251,7 +254,7 @@ def polling_source_create(request, dataset_id, channel_type):
     # Get the dataset that matches the id
     dataset = Dataset.GetById(dataset_id)
     # Create a new source
-    source = Source.Create(dataset, channel_type)
+    source = Source.Create(request.user, dataset, channel_type)
     # Render the template with the config
     return HttpResponse(source.to_json(), content_type='application/json')
 
@@ -362,7 +365,7 @@ def post_adapter_source_create(request, dataset_id, channel_type):
     # Get the dataset that matches the id
     dataset = Dataset.GetById(dataset_id)
     # Create a new source
-    source = Source.Create(dataset, channel_type)
+    source = Source.Create(request.user, dataset, channel_type)
     # Render the template with the config
     return HttpResponse(source.to_json(), content_type='application/json')
 

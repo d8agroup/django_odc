@@ -5,10 +5,13 @@
             <p class="title">{{ item.title }}</p>
         {% endif %}
         {% for text in item.text %}
-            <p class="text">{{ text }}</p>
+            <p class="text">{{ text|truncatewords:50 }}</p>
         {% endfor %}
     </div>
     <div class="content-metadata ui-corner-all">
         <p class="created">{{ item.created }}</p>
+        {% if item.author.display_name %}
+            <p class="author-display-name"><strong>By:</strong> {{ item.author.display_name }}</p>
+        {% endif %}
     </div>
 </li>

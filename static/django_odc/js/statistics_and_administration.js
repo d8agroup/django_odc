@@ -50,12 +50,19 @@
             // The aggregate polling sources now button
             $('#aggregator-poll-now-button').click(function(){
 
+                $('#aggregator-poll-now-label-inactive').hide();
+                $('#aggregator-poll-now-label-running').show();
+
                 //Call the api
-                //TODO: Add visual feedback
                 $.get('aggregate_for_user', function(){
+
+                    $('#aggregator-poll-now-label-running').hide();
+                    $('#aggregator-poll-now-label-inactive').show();
 
                     //Reload the run records
                     container.django_odc_statistics_and_administration('reload_run_records');
+
+                    $.django_odc_datasets.reload_datasets()
                 });
             });
         },

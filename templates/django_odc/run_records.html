@@ -7,7 +7,7 @@
             <i class="icon-check"></i>
     {% endif %}
 
-        <span class="created">{{ record.created|date:"D, d b, fa" }}</span>
+        <span class="created">{{ record.created|date:"D, d b, f a" }}</span>
         <span class="collected">{{ record.statistics.total_items|default:'0' }} items collected</span>
         {% if record.status == "error" %}
             <div class="errors hide">
