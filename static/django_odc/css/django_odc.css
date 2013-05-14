@@ -70,10 +70,10 @@ h4 > .btn    { float:right; font-weight:normal; position:relative; bottom:3px; }
 .dataset-content                    { border:1px solid #CCC; border-top:none; }
 .dataset-content .inner             { padding:20px; }
 .dataset-sources                    { border:1px solid #CCC; padding:10px; }
-.dataset-sources-list               { overflow:scroll; overflow-y:hidden; white-space:nowrap; min-height:210px;}
-.dataset-source                     { width:128px; text-align:center; position:relative; float:left; margin-top:15px; }
+.dataset-sources-list               { overflow:scroll; overflow-y:hidden; white-space:nowrap; height:210px;}
+.dataset-source                     { width:128px; text-align:center; position:relative; display:inline-block; margin-top:15px; }
 .dataset-source-actions             { position:absolute; right:13px; top:13px; padding:5px; background-color:rgba(256,256,256,0.6);  text-align:right;}
-.dataset-source p                   { margin:0; padding:0; }
+.dataset-source p                   { margin:0; padding:0; font-size:80%; }
 .dataset-source-services-container  { position:absolute; top:100px; left:13px; width:100px; }
 .dataset-source-service             { float:left; margin-right:5px;}
 
