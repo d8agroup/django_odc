@@ -160,6 +160,10 @@ def javascript_url_bridge(request):
                 'url': reverse('sources_kill')
             },
             {
+                'name': 'SOURCES_EMPTY',
+                'url': reverse('sources_empty')
+            },
+            {
                 'name': 'STATISTICS_RUN_RECORDS',
                 'url': reverse('statistics_run_records')
             }]}
@@ -579,6 +583,16 @@ def sources_kill(request):
     datasets = Dataset.GetForUser(request.user)
     # Issue the kill signal
     [d.kill() for d in datasets]
+    # return nothing
+    return HttpResponse('')
+
+
+@login_required(login_url='/admin')
+def sources_empty(request):
+    # Get all the sources for this user
+    sources = Source.GetForUser(request.user)
+    # Issue the empty signal
+    [s.empty() for s in sources]
     # return nothing
     return HttpResponse('')
 

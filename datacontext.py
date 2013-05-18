@@ -18,6 +18,9 @@ class _BaseDataContext(object):
         """This should be overwritten by the inheriting class"""
         return None
 
+    def source_empty(self, source):
+        pass
+
 
 class Solr4xDataContent(_BaseDataContext):
     solr_url = ''
@@ -79,6 +82,10 @@ class Solr4xDataContent(_BaseDataContext):
         }
 
         return results
+
+    def source_empty(self, source):
+        connection = solr.SolrConnection(self.solr_url)
+        connection.delete(queries=['source_id:%s' % source.guid], commit=True)
 
     def _parse_pivots_from_solr(self, facet_pivots):
         parsed_pivots = []

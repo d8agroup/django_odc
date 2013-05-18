@@ -26,15 +26,16 @@
         $('#confirmation-question').html(confirmation_data.question || '');
         $('#confirmation-help-message').html(confirmation_data.help_message || '');
 
-        //Set the callback
+        //Set the callbacks
         modal.data('confirm_callback', confirmation_data.confirm_callback);
+        modal.data('cancel_callback', confirmation_data.cancel_callback);
 
         //Open
         modal.dialog('open');
     };
 
     //Close
-    $.django_odc_modal_confirmation.close = function(run_callback) {
+    $.django_odc_modal_confirmation.close = function(run_confirm_callback) {
 
         //Get a handle on the modal
         var modal = $('#modal-confirmation');
@@ -44,8 +45,10 @@
             $.django_odc_modal_confirmation.init();
 
         //If confirm, run the callback
-        if (run_callback != null && run_callback)
+        if (run_confirm_callback != null && run_confirm_callback)
             modal.data('confirm_callback')();
+        else if (modal.data('cancel_callback') != null)
+            modal.data('cancel_callback')();
 
         //Close
         modal.dialog('close');

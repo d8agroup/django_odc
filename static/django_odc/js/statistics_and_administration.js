@@ -28,23 +28,63 @@
             $('#kill-all-source-button').click(function(){
 
                 //Build the confirmation modal data
-                    var confirmation_data = {
-                        title: 'Do you really want to do that?',
-                        question: 'This will stop all running sources.',
-                        help_message: 'This is a good idea if you think something has broken but use it wisely!',
-                        confirm_callback: function() {
+                var confirmation_data = {
+                    title: 'Do you really want to do that?',
+                    question: 'This will stop all running sources.',
+                    help_message: 'This is a good idea if you think something has broken but use it wisely!',
+                    confirm_callback: function() {
 
-                            // Call the api
-                            $.get(URL_SOURCES_KILL, function(){
+                        // Call the api
+                        $.get(URL_SOURCES_KILL, function(){
 
-                                //Reload all the datasets
-                                $.django_odc_datasets.reload_datasets();
-                            });
-                        }
-                    };
+                            //Reload all the datasets
+                            $.django_odc_datasets.reload_datasets();
+                        });
+                    }
+                };
 
-                    //Call the confirm modal
-                    $.django_odc_modal_confirmation.open(confirmation_data);
+                //Call the confirm modal
+                $.django_odc_modal_confirmation.open(confirmation_data);
+            });
+
+            //Attach to the clear all data button
+            $('#clear-all-data-button').click(function(){
+
+                //Build the confirmation modal data
+                var confirmation_data = {
+                    title: 'Do you really want to do that?',
+                    question: 'This will delete all data for all sources.',
+                    help_message: 'This will bank out this app to no data state.',
+                    confirm_callback: function() {
+
+                        // Call the api
+                        $.get(URL_SOURCES_EMPTY, function(){
+
+                            //Set some ui stuff on the button
+                            $('#clear-all-data-button')
+                                .removeClass('disabled')
+                                .html('<i class="icon-trash"></i>');
+
+                            //Reload all the datasets
+                            $.django_odc_datasets.reload_datasets();
+                        });
+                    },
+                    cancel_callback: function() {
+
+                        //Reset some ui stuff on the button
+                        $('#clear-all-data-button')
+                            .removeClass('disabled')
+                            .html('<i class="icon-trash"></i>');
+                    }
+                };
+
+                //Set the button state
+                $('#clear-all-data-button')
+                    .addClass('disabled')
+                    .html('<i class="icon-spin icon-spinner"></i>');
+
+                //Call the confirm modal
+                $.django_odc_modal_confirmation.open(confirmation_data);
             });
 
             // The aggregate polling sources now button

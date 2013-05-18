@@ -267,6 +267,10 @@ class Source(models.Model):
             return None
 
     @classmethod
+    def GetForUser(cls, user):
+        return Source.objects.filter(user=user).exclude(status='deleted').all()
+
+    @classmethod
     def AllAvailableChannelConfigurations(cls):
         # Get all the sources from the sources module
         all_sources = cls._AllAvailableChannels()
@@ -598,6 +602,17 @@ class Source(models.Model):
         self.status = 'active'
         # save
         self.save(skip_validation=True)
+
+    def empty(self, reset_since_time=True):
+        for dataset in self.datasets.all():
+            data_context = dataset._get_data_context()
+            data_context.source_empty(self)
+            if not reset_since_time:
+                continue
+            channel = self.channel
+            channel.pop('since_time', None)
+            self.channel = channel
+            self.save(skip_validation=True)
 
     def _underlying_channel(self):
         channel_type = self.channel['type']

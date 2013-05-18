@@ -67,6 +67,8 @@ urlpatterns = patterns(
         views.source_delete, name='source_delete'),
     url(r'sources_kill$',
         views.sources_kill, name='sources_kill'),
+    url(r'sources_empty$',
+        views.sources_empty, name='sources_empty'),
 
     url(r'statistics_run_records$',
         views.statistics_run_records, name='statistics_run_records'),
