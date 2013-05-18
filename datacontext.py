@@ -49,10 +49,12 @@ class Solr4xDataContent(_BaseDataContext):
             if source.status != 'active':
                 continue
             try:
-                results = connection.query(q='source_id:%s' % source.guid, stats='on', stats_field='created')
+                results = connection.query(q='source_id:%s' % source.guid, rows=0)
                 stats['total_items'] += results._numFound
-                created_max = results.stats['stats_fields']['created']['max']
-                created_min = results.stats['stats_fields']['created']['min']
+                # created_max = results.stats['stats_fields']['created']['max']
+                # created_min = results.stats['stats_fields']['created']['min']
+                created_max = connection.query(q='source_id:%s' % source.guid, rows=1, sort='created desc').results[0]['created']
+                created_min = connection.query(q='source_id:%s' % source.guid, rows=1, sort='created asc').results[0]['created']
                 total_minutes = (float((created_max - created_min).seconds) / 60) or 1
                 items_per_minute.append(float(stats['total_items']) / total_minutes)
             except Exception, e:
