@@ -595,4 +595,4 @@ def statistics_run_records(request):
     # Sort them by date desc
     run_records = sorted(run_records, key=lambda r: r.created, reverse=True)
     # Render them to the template
-    return render_to_response('django_odc/run_records.html', {'run_records': run_records})
+    return render_to_response('django_odc/run_records.html', {'run_records': run_records[:50]})
