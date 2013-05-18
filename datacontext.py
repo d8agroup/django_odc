@@ -71,7 +71,9 @@ class Solr4xDataContent(_BaseDataContext):
         fq += search_data.get('filters', [])
         rows = search_data.get('pagination', {}).get('rows', 10)
         pivot = [','.join(p['fields']) for p in search_data.get('pivots', [])]
-        raw_results = connection.query(q=q, facet='on', fq=fq, rows=rows, facet_pivot=pivot)
+        sort_data = search_data.get('sort', {})
+        sort = '%s %s' % (sort_data.get('field', 'created'), sort_data.get('direction', 'desc'))
+        raw_results = connection.query(q=q, facet='on', fq=fq, rows=rows, facet_pivot=pivot, sort=sort)
         results = {
             'items': [self._parse_data_from_solr(r) for r in raw_results.results],
             'pivots': self._parse_pivots_from_solr(raw_results.facet_counts.get('facet_pivot', {}))

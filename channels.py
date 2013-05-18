@@ -243,25 +243,6 @@ class FeedChannel(_BaseChannel):
         # No errors = pass
         return []
 
-    def _parse_feed_item(self, item, source):
-        created = None
-        try:
-            timestamp = time.mktime(item.get('published_parsed'))
-            created = datetime.datetime.fromtimestamp(timestamp)
-        except Exception, e:
-            pass
-        author = ContentItemAuthor()
-        author.display_name = item.get('author', '')
-        content = ContentItem()
-        content.id = md5(item.get('link', ('%s' % (time.time() + randint(0, 1000))))).hexdigest()
-        content.source = source.to_dict()
-        content.author = author
-        content.title = strip_tags(item.get('title', ''))
-        content.link = item.get('link', '')
-        content.text = [strip_tags(item.get('description', ''))]
-        content.created = created
-        return content
-
     def run_test(self, source, configuration, test_result_id):
         # Validate the config to ensure its ok - it should be but who knows :)
         errors = FeedChannel.ValidateAndReturnErrors(configuration)
@@ -391,6 +372,25 @@ class FeedChannel(_BaseChannel):
         configuration['since_time'] = time.mktime(youngest.timetuple()) if youngest_is_time else time.time()
         # Return the results
         return results
+
+    def _parse_feed_item(self, item, source):
+        created = None
+        try:
+            timestamp = time.mktime(item.get('published_parsed'))
+            created = datetime.datetime.fromtimestamp(timestamp)
+        except Exception, e:
+            pass
+        author = ContentItemAuthor()
+        author.display_name = item.get('author', '')
+        content = ContentItem()
+        content.id = md5(item.get('link', ('%s' % (time.time() + randint(0, 1000))))).hexdigest()
+        content.source = source.to_dict()
+        content.author = author
+        content.title = Truncator(strip_tags(item.get('title', ''))).words(20, truncate=' ...')
+        content.link = item.get('link', '')
+        content.text = [Truncator(strip_tags(item.get('description', ''))).words(50, truncate=' ...')]
+        content.created = created
+        return content
 
 
 class FacebookPublicSearchChannel(_BaseChannel):
@@ -564,7 +564,7 @@ class FacebookPublicSearchChannel(_BaseChannel):
 
     def _parse_fb_item(self, item, source):
         created = None
-        message = strip_tags(item.get('message', ''))
+        message = Truncator(strip_tags(item.get('message', ''))).words(50, truncate=' ...')
         id = item.get('id', None)
         link_format = 'http://www.facebook.com/profile.php?id=%s&v=wall&story_fbid=%s'
         try:
@@ -585,4 +585,3 @@ class FacebookPublicSearchChannel(_BaseChannel):
         content.text = [message]
         content.created = created
         return content
-
