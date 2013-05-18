@@ -427,13 +427,13 @@ class Source(models.Model):
         # Save the object
         super(Source, self).save(*args, **kwargs)
 
-    def delete(self, force_delete=False, using=None):
-        # Intercept the delete signal and mark as deleted
-        if force_delete:
-            super(Source, self).delete(using)
-        else:
-            self.status = 'deleted'
-            self.save(skip_validation=True)
+    # def delete(self, force_delete=False, using=None):
+    #     # Intercept the delete signal and mark as deleted
+    #     if force_delete:
+    #         super(Source, self).delete(using)
+    #     else:
+    #         self.status = 'deleted'
+    #         self.save(skip_validation=True)
 
     def to_dict(self):
         return {
