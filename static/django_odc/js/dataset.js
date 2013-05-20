@@ -187,6 +187,47 @@
                     //Open the add source modal
                     $.django_odc_modal_channel_types.open(dataset_id);
                 });
+
+            //Attach to the add users button
+            container.find('.add-user-to-dataset-button')
+
+                .click(function(){
+
+                    //Get a handel on the container
+                    var container = $(this).parents('.dataset:first');
+
+                    //Get the dataset id
+                    var dataset_id = container.data('dataset').id;
+
+                    //Open the add users modal
+                    $.django_odc_modal_configure_dataset_users.open(dataset_id);
+                });
+
+            //Attach to the remove user buttons
+            container.find('.remove-user-from-dataset-button').click(function(){
+
+                //Get a handel on the button
+                var button = $(this);
+
+                //disable and show the loading of the button
+                button.addClass('disabled').find('i').attr('class', 'icon-spin icon-spinner');
+
+                //Get the user id
+                var user_id = button.data('user_id');
+
+                //Get the dataset id
+                var dataset_id = button.data('dataset_id');
+
+                //Build the url
+                var url = URL_DATASET_USERS_REMOVE.replace('DATASET_ID', dataset_id).replace('USER_ID', user_id);
+
+                //Call the api
+                $.get(url, function(){
+
+                    //Call thr dataset lists to update the dataset
+                    $.django_odc_datasets.update_dataset(dataset_id);
+                });
+            })
         },
         save: function() {
 

@@ -2,6 +2,7 @@ import json
 import sys
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, redirect
@@ -10,7 +11,7 @@ from django.template.loader import render_to_string
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 
-from django_odc.models import Dataset, Source, SourceTestResult
+from django_odc.models import Dataset, Source, SourceTestResult, UserGroup
 from django_odc.settingsbridge import access_settings
 from django_odc.utils import async, format_error
 
@@ -82,6 +83,18 @@ def javascript_url_bridge(request):
             {
                 'name': 'DATASET_STATISTICS_SUMMARY',
                 'url': reverse('dataset_statistics_summary', args=('DATASET_ID',))
+            },
+            {
+                'name': 'DATASET_USERS_CONFIGURE',
+                'url': reverse('dataset_users_configure', args=('DATASET_ID',))
+            },
+            {
+                'name': 'DATASET_USERS_ADD',
+                'url': reverse('dataset_users_add', args=('DATASET_ID', 'USER_ID',))
+            },
+            {
+                'name': 'DATASET_USERS_REMOVE',
+                'url': reverse('dataset_users_remove', args=('DATASET_ID', 'USER_ID',))
             },
             {
                 'name': 'CHANNEL_TYPES',
@@ -260,6 +273,52 @@ def dataset_sources(request, dataset_id):
         return render_to_response('django_odc/dataset_no_sources.html')
     # Else render the sources and return t he template
     return render_to_response('django_odc/dataset_sources.html', {'sources': sources, 'dataset': dataset})
+
+
+@login_required(login_url='/admin')
+def dataset_users_configure(request, dataset_id):
+    # Get the dataset for this id
+    dataset = Dataset.GetById(dataset_id)
+    # Get a list of all active users
+    users = User.objects.filter(is_active=True).all()
+    # Filter out this user
+    users = [u for u in users if u != request.user]
+    # Get all users currently attached to this dataset
+    current_users = []
+    for user_group in dataset.user_groups():
+        for user in user_group.get_users():
+            if user not in current_users:
+                current_users.append(user)
+    # Filter out those already attached to the dataset
+    users = [u for u in users if u not in current_users]
+    # return the template
+    return render_to_response(
+        'django_odc/modals/configure_dataset_users/configure_dataset_users_list.html',
+        {'users': users})
+
+
+@login_required(login_url='/admin')
+def dataset_users_add(request, dataset_id, user_id):
+    # Get the dataset for this id
+    dataset = Dataset.GetById(dataset_id)
+    # Get the user for this user id
+    user = User.objects.get(id=user_id)
+    # TODO this is a hack because we know there is only one group at present
+    user_group = UserGroup.GetForDataset(dataset)[0]
+    user_group.add_user(user)
+    return HttpResponse('')
+
+
+@login_required(login_url='/admin')
+def dataset_users_remove(request, dataset_id, user_id):
+    # Get the dataset for this id
+    dataset = Dataset.GetById(dataset_id)
+    # Get the user for this user id
+    user = User.objects.get(id=user_id)
+    # TODO this is a hack because we know there is only one group at present
+    user_group = UserGroup.GetForDataset(dataset)[0]
+    user_group.remove_user(user)
+    return HttpResponse('')
 
 
 @login_required(login_url='/admin')

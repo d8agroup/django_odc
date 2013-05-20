@@ -51,10 +51,16 @@ class Dataset(models.Model):
             return None
 
     @classmethod
-    def GetForUser(cls, user, include_deleted=False, count=None):
-        datasets = Dataset.objects.filter(user=user)
+    def GetForUser(cls, user, include_deleted=False, include_user_group_linked=False, count=None):
+        datasets = [d for d in Dataset.objects.filter(user=user)]
         if not include_deleted:
             datasets = [d for d in datasets if d.status != 'deleted']
+        if include_user_group_linked:
+            for user_group in UserGroup.GetForUser(user):
+                for dataset in user_group.get_datasets():
+                    if dataset not in datasets:
+                        datasets.append(dataset)
+        datasets = sorted(datasets, key=lambda d: d.created, reverse=True)
         if count:
             datasets = datasets[:count]
         return datasets
@@ -216,12 +222,88 @@ class Dataset(models.Model):
         # Return the results
         return results
 
+    def user_groups(self):
+        return UserGroup.GetForDataset(self, create_if_missing=False)
+
+    def user_is_in_user_groups(self, user):
+        for ug in self.user_groups():
+            if user in ug.get_users():
+                return True
+        return False
+
     def _get_data_context(self):
         # Get the dynamic data context init config
         config = access_settings('ODC_DATACONTEXT_INIT_CONFIG')
         # Get the dynamically configured data context
         data_context = getattr(datacontext, access_settings('ODC_DATACONTEXT_TYPE'))(config)
         return data_context
+
+
+class UserGroup(models.Model):
+    _datasets = models.ManyToManyField(Dataset)
+    _users = models.ManyToManyField(User)
+    created = models.DateTimeField()
+    _name = models.TextField(default='')
+
+    @classmethod
+    def Create(cls, dataset):
+        #Check if there is an unnamed group for this dataset already
+        try:
+            return UserGroup.objects.get(_datasets__id=dataset.id, _name='')
+        except UserGroup.DoesNotExist:
+            pass
+        #If not then create one
+        user_group = UserGroup(created=now())
+        user_group.save()
+        user_group._datasets.add(dataset)
+        user_group.save()
+        return user_group
+
+    @classmethod
+    def GetForDataset(cls, dataset, create_if_missing=True):
+        user_groups = UserGroup.objects.filter(_datasets__id=dataset.id).all()
+        if user_groups or not create_if_missing:
+            return user_groups
+        return [cls.Create(dataset)]
+
+    @classmethod
+    def GetForUser(cls, user):
+        return UserGroup.objects.filter(_users__id=user.id).all()
+
+    @property
+    def name(self):
+        # If there is a name then return it
+        if self._name:
+            return self._name
+        # Else build one from the dataset
+        return 'Users assigned to dataset %s' % [d for d in self._datasets.all()][0].display_name
+
+    def add_user(self, user):
+        if user not in self._users.all():
+            self._users.add(user)
+            self.save()
+
+    def remove_user(self, user):
+        if user in self._users.all():
+            self._users.remove(user)
+            self.save()
+
+    def get_users(self):
+        return [u for u in self._users.all()]
+
+    def add_dataset(self, dataset, name=None):
+        # TODO this should enforce that all user groups with more that one datasets have a name
+        raise NotImplementedError
+
+    def remove_dataset(self, dataset):
+        # TODO this should reset the name to '' if there is only one dataset left in the set
+        raise NotImplementedError
+
+    def get_datasets(self):
+        return [d for d in self._datasets.all()]
+
+    def is_unnamed(self):
+        return self._name == ''
 
 
 class Source(models.Model):

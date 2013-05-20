@@ -4,6 +4,13 @@
     /* Static Functions */
     $.django_odc_datasets = {};
 
+    //Reset the css size
+    $.django_odc_datasets.reset_size = function() {
+
+
+        $('#datasets-container:visible').height($(window).height() - 200);
+    }
+
     //Reload the list
     $.django_odc_datasets.reload_datasets = function() {
 
@@ -73,6 +80,9 @@
 
             //Attach any event handlers
             container.django_odc_datasets('attach_event_handlers');
+
+            //Set the size of the container
+            $.django_odc_datasets.reset_size();
 
             //Reload the dataset list
             container.django_odc_datasets('reload_dataset_list', data.focus_dataset_id);

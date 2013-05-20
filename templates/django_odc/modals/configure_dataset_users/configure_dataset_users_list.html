@@ -1,0 +1,15 @@
+{% for user in users %}
+    <div class="configure-dataset-users-user state-default">
+        <a class="btn btn-small add-this-user-to-dataset-button" data-user_id="{{ user.id }}">
+            <i class="icon-plus"></i> add this user
+        </a>
+        <h5>{{ user.username }}</h5>
+    </div>
+{% empty %}
+    <div class="state-info">
+        <p>
+            <i class="icon-info-sign"></i>
+            There are no users in the system that are not already able to see this dataset.
+        </p>
+    </div>
+{% endfor %}

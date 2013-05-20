@@ -20,6 +20,7 @@
     <script type="text/javascript" src="{% static 'django_odc/js/modals/modal_configure_polling_source.js' %}"></script>
     <script type="text/javascript" src="{% static 'django_odc/js/modals/modal_configure_post_adapter_source.js' %}"></script>
     <script type="text/javascript" src="{% static 'django_odc/js/modals/modal_confirmation.js' %}"></script>
+    <script type="text/javascript" src="{% static 'django_odc/js/modals/modal_configure_dataset_users.js' %}"></script>
     <script type="text/javascript" src="{% static 'django_odc/js/loading.js' %}"></script>
     <script type="text/javascript">
         $(document).ready(function(){
@@ -32,10 +33,17 @@
 
 {% block content %}
     <div class="row-fluid">
-        <div id="your-datasets" class="span6">
-            <h2>Your Datasets <a class="btn btn-small" id="add-dataset-button">add a dataset</a></h2>
-            <div id="datasets-container">
-                {% include 'django_odc/loading.html' %}
+        <div class="span6">
+            <div id="your-datasets" class="container-with-header">
+                <h2 class="header">
+                    <a class="btn btn-small" id="add-dataset-button">add a dataset</a>
+                    Your Datasets
+                </h2>
+                <div class="content">
+                    <div id="datasets-container">
+                        {% include 'django_odc/loading.html' %}
+                    </div>
+                </div>
             </div>
         </div>
         <div class="span3">
@@ -100,5 +108,6 @@
         {% include 'django_odc/modal_confirmation.html' %}
         {% include 'django_odc/modals/configure_polling_source/configure_polling_source.html' %}
         {% include 'django_odc/modals/configure_post_adapter_source/configure_post_adapter_source.html' %}
+        {% include 'django_odc/modals/configure_dataset_users/configure_dataset_users.html' %}
     </div>
 {% endblock %}
