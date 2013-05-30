@@ -6,6 +6,7 @@ import sys
 import uuid
 
 from django.contrib.auth.models import User
+from django.core.exceptions import MultipleObjectsReturned
 from django.db import models
 from django.utils.timezone import now
 
@@ -878,3 +879,35 @@ class SourceRunRecord(models.Model):
         self.status_messages['errors'].append(
             'Kill signal issues on %s for %s' % (self.modified.strftime('%c'), reason))
         self.save()
+
+
+class AuthenticationStorage(models.Model):
+    type = models.TextField()
+    _config = models.TextField(default='{}')
+
+    @classmethod
+    def GetByType(cls, type):
+        try:
+            return AuthenticationStorage.objects.get(type=type)
+        except AuthenticationStorage.DoesNotExist:
+            return None
+        except MultipleObjectsReturned:
+            [a.delete() for a in AuthenticationStorage.objects.all()]
+            return None
+
+    @classmethod
+    def CreateWithTypeAndConfig(cls, type, config):
+        storage = cls.GetByType(type)
+        if not storage:
+            storage = AuthenticationStorage(type=type)
+            storage.config = config
+            storage.save()
+        return storage
+
+    @property
+    def config(self):
+        return json.loads(self._config)
+
+    @config.setter
+    def config(self, value):
+        self._config = json.dumps(value or {})

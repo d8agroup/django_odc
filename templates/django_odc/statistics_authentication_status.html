@@ -1,0 +1,41 @@
+{% load django_odc_tags %}
+{% if authentication_controllers %}
+    <table>
+        {% for controller in authentication_controllers %}
+            <tr>
+                <td class="display-name">{{ controller.display_name }}</td>
+                {% if controller.status == 'unconfigured' %}
+                    <td class="status">
+                        <span class="label label-warning">
+                            unconfigured
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a class="btn btn-mini configure-authentication-button" title="Configure this authentication type" data-controller="{{ controller|jsonify }}">
+                            <i class="icon-cog"></i>
+                        </a>
+                    </td>
+                {% endif %}
+                {% if controller.status == 'active' %}
+                    <td class="status">
+                        <span class="label label-success">
+                            active
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a class="btn btn-mini configure-authentication-button" title="reconfigure this authentication type" data-controller="{{ controller|jsonify }}">
+                            <i class="icon-cog"></i>
+                        </a>
+                    </td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <div class="state-info">
+        <p>
+            <i class="icon-info-sign"></i>
+            There are no authentication controllers set up for this instance of ODC
+        </p>
+    </div>
+{% endif %}

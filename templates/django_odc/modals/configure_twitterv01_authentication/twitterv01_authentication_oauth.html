@@ -1,0 +1,39 @@
+<div id="twitterv01-authentication-oauth">
+    <h5>Configure Twitter OAuth</h5>
+    {% if errors %}
+        <div class="state-error">
+            {% for error in errors %}
+                <p>
+                    <i class="icon-warning-sign"></i> {{ error }}
+                </p>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <div class="row-fluid">
+        <div class="span2">
+            <span class="number state-info">1st</span>
+        </div>
+        <div class="span9 offset1">
+            <a class="btn" target="_blank" href="{{ redirect_url }}" id="twitterv01-authentication-oauth-authorize-button">
+                <i class="icon-twitter"></i>
+                <span>Click here to authorize</span>
+            </a>
+        </div>
+    </div>
+    <div class="row-fluid">
+        <div class="span2">
+            <span class="number state-info">2nd</span>
+        </div>
+        <div class="span9 offset1">
+            <p>Enter the PIN number shown to you by Twitter</p>
+            <form class="form-inline">
+                {% csrf_token %}
+                <label class="control-label">Twitter PIN: </label>
+                <input type="text" name="pin" value="" /><br/>
+                <button class="btn" id="twitterv01-authentication-oauth-submit-button">
+                    <i class="icon-play"></i> Submit this PIN
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

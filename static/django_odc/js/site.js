@@ -25,6 +25,7 @@
             //Bind to the window resize function
             $(window).resize(function(){
                 $.django_odc_datasets.reset_size();
+                $.django_odc_statistics_and_administration.reset_size();
             })
         }
     };

@@ -21,6 +21,7 @@
     <script type="text/javascript" src="{% static 'django_odc/js/modals/modal_configure_post_adapter_source.js' %}"></script>
     <script type="text/javascript" src="{% static 'django_odc/js/modals/modal_confirmation.js' %}"></script>
     <script type="text/javascript" src="{% static 'django_odc/js/modals/modal_configure_dataset_users.js' %}"></script>
+    <script type="text/javascript" src="{% static 'django_odc/js/modals/modal_twitterv01_authentication.js' %}"></script>
     <script type="text/javascript" src="{% static 'django_odc/js/loading.js' %}"></script>
     <script type="text/javascript">
         $(document).ready(function(){
@@ -95,6 +96,12 @@
                     </table>
                 </div>
             </div>
+            <div class="container-with-header" id="authentication">
+                <h2 class="header">Channel Authentication</h2>
+                <div class="content">
+                    <div id="authentication-list"></div>
+                </div>
+            </div>
             <div class="container-with-header" id="run-records">
                 <h2 class="header">Aggregation History</h2>
                 <div class="content">
@@ -109,5 +116,6 @@
         {% include 'django_odc/modals/configure_polling_source/configure_polling_source.html' %}
         {% include 'django_odc/modals/configure_post_adapter_source/configure_post_adapter_source.html' %}
         {% include 'django_odc/modals/configure_dataset_users/configure_dataset_users.html' %}
+        {% include 'django_odc/modals/configure_twitterv01_authentication/twitterv01_authentication.html' %}
     </div>
 {% endblock %}

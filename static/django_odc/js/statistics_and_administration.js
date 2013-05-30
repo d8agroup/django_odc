@@ -4,6 +4,16 @@
     /* Static Functions */
     $.django_odc_statistics_and_administration = {};
 
+    $.django_odc_statistics_and_administration.reload_authentication_status = function(){
+
+        $('#statistics').django_odc_statistics_and_administration('reload_authentication_status');
+    };
+
+    $.django_odc_statistics_and_administration.reset_size = function() {
+
+        $('#statistics').height($(window).height() - 110);
+    };
+
 
     /******************************************************************************************************************/
     /* Instance Functions */
@@ -13,11 +23,17 @@
             //Get a handle on the container
             var container = $(this);
 
+            //Reset the size of the container
+            $.django_odc_statistics_and_administration.reset_size();
+
             //Attach any event handlers
             container.django_odc_statistics_and_administration('attach_event_handlers');
 
             // Reload the run records
             container.django_odc_statistics_and_administration('reload_run_records');
+
+            // Reload the authentication status
+            container.django_odc_statistics_and_administration('reload_authentication_status');
         },
         attach_event_handlers: function() {
 
@@ -141,6 +157,48 @@
                                 errors.slideDown();
                         });
                 });
+            }, 1000);
+        },
+        reload_authentication_status: function() {
+
+            //Get a handel on the container
+            var container = this;
+
+            //Get a handel on the list container
+            var list_container = container.find('#authentication-list');
+
+            //Apply loading to the list
+            list_container.django_odc_loading('apply', 'Loading');
+
+            //UI delay
+            setTimeout(function(){
+
+                //Call the api
+                $.get(URL_STATISTICS_AUTHENTICATION_STATUS, function(template){
+
+                    //Remove loading and add the template
+                    list_container
+                        .django_odc_loading('remove')
+                        .html(template);
+
+                    list_container.find('.configure-authentication-button').click(function(){
+
+                        //Get a handle on the button
+                        var button = $(this);
+
+                        //Get the controller details
+                        var controller = button.data('controller');
+
+                        //switch on the controller type
+                        if (controller.type == 'TwitterV01') {
+
+                            $.django_odc_modal_twitterv01_authentication.open(function(){
+                                $.django_odc_statistics_and_administration.reload_authentication_status();
+                            });
+                        }
+                    })
+                })
+
             }, 1000);
         }
     };

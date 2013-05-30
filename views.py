@@ -1,6 +1,7 @@
 import json
 import sys
 
+import tweepy
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
@@ -10,6 +11,7 @@ from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
+from django_odc.authentication import TwitterV01AuthenticationController
 
 from django_odc.models import Dataset, Source, SourceTestResult, UserGroup
 from django_odc.settingsbridge import access_settings
@@ -179,6 +181,18 @@ def javascript_url_bridge(request):
             {
                 'name': 'STATISTICS_RUN_RECORDS',
                 'url': reverse('statistics_run_records')
+            },
+            {
+                'name': 'STATISTICS_AUTHENTICATION_STATUS',
+                'url': reverse('statistics_authentication_status')
+            },
+            {
+                'name': 'STATISTICS_AUTHENTICATION_TWITTERV01_CONFIGURE',
+                'url': reverse('statistics_authentication_twitterv01_configure')
+            },
+            {
+                'name': 'STATISTICS_AUTHENTICATION_TWITTERV01_OAUTH',
+                'url': reverse('statistics_authentication_twitterv01_oauth')
             }]}
     return render_to_response(
         'django_odc/javascript_url_bridge', template_data, content_type='text/javascript')
@@ -669,3 +683,91 @@ def statistics_run_records(request):
     run_records = sorted(run_records, key=lambda r: r.created, reverse=True)
     # Render them to the template
     return render_to_response('django_odc/run_records.html', {'run_records': run_records[:50]})
+
+
+@login_required(login_url='/admin')
+def statistics_authentication_status(request):
+    authentication_controllers = [
+        TwitterV01AuthenticationController.GetOrCreate().to_dict()
+    ]
+    return render_to_response(
+        'django_odc/statistics_authentication_status.html',
+        {'authentication_controllers': authentication_controllers})
+
+
+@login_required(login_url='/admin')
+def statistics_authentication_twitterv01_configure(request):
+    template_data = {
+        'controller': TwitterV01AuthenticationController.GetOrCreate().to_dict(),
+        'errors': []}
+    if request.method == 'POST':
+        app_key = request.POST.get('app_key', None)
+        app_secret = request.POST.get('app_secret', None)
+        if not app_key or not app_secret:
+            template_data['errors'].append('The Application Key and Secret are required.')
+        if not template_data['errors']:
+            controller = TwitterV01AuthenticationController.GetOrCreate()
+            for key, value in request.POST.items():
+                for element in controller.config['elements']:
+                    if key == element['name']:
+                        element['value'] = value
+            controller.save()
+            return redirect('statistics_authentication_twitterv01_oauth')
+    return_data = {
+        'status': 'error',
+        'template': render_to_string(
+            'django_odc/modals/configure_twitterv01_authentication/twitterv01_authentication_config.html',
+            template_data,
+            context_instance=RequestContext(request))}
+    return HttpResponse(json.dumps(return_data), content_type='application/json')
+
+
+@login_required(login_url='/admin')
+def statistics_authentication_twitterv01_oauth(request):
+    controller = TwitterV01AuthenticationController.GetOrCreate()
+    template_data = {'errors': [], 'controller': controller}
+    app_key = [e for e in controller.config['elements'] if e['name'] == 'app_key'][0]['value']
+    app_secret = [e for e in controller.config['elements'] if e['name'] == 'app_secret'][0]['value']
+    auth = tweepy.OAuthHandler(str(app_key), str(app_secret))
+    if 'pin' in request.POST:
+        token = request.session.get('request_token', '')
+        auth.set_request_token(token[0], token[1])
+        try:
+            auth.get_access_token(request.POST.get('pin'))
+            for element in controller.config['elements']:
+                if element['name'] == 'oauth_token':
+                    element['value'] = auth.access_token.key
+                if element['name'] == 'oauth_secret':
+                    element['value'] = auth.access_token.secret
+            controller.save()
+            request.session.pop('request_token', '')
+            return_data = {
+                'template': render_to_string(
+                    'django_odc/modals/configure_twitterv01_authentication/twitterv01_authentication_confirm.html'),
+                'status': 'ok'}
+            return HttpResponse(json.dumps(return_data), content_type='application/json')
+        except Exception:
+            template_data['errors'].append(
+                'There was an error using the PIN you supplied, please try authorising again.')
+    else:
+        try:
+            redirect_url = auth.get_authorization_url()
+            request.session['request_token'] = (auth.request_token.key, auth.request_token.secret)
+            template_data['redirect_url'] = redirect_url
+        except tweepy.TweepError:
+            template_data['errors'].append(
+                'There was a problem with the details you supplied, it could be that twitter is down but please '
+                'check the application key and secret and try again.')
+            return_data = {
+                'status': 'error',
+                'template': render_to_string(
+                    'django_odc/modals/configure_twitterv01_authentication/twitterv01_authentication_config.html',
+                    template_data,
+                    context_instance=RequestContext(request))}
+            return HttpResponse(json.dumps(return_data), content_type='application/json')
+    template = render_to_string(
+        'django_odc/modals/configure_twitterv01_authentication/twitterv01_authentication_oauth.html',
+        template_data,
+        context_instance=RequestContext(request))
+    return_data = {'status': 'ok' if not template_data['errors'] else 'error', 'template': template}
+    return HttpResponse(json.dumps(return_data), content_type='application/json')

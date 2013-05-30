@@ -1,0 +1,26 @@
+<div id="twitterv01-authentication-config">
+    <h5>Configure Twitter OAuth</h5>
+    {% if errors %}
+        <div class="state-error">
+            {% for error in errors %}
+                <p>
+                    <i class="icon-warning-sign"></i> {{ error }}
+                </p>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <form class="form form-horizontal" action="{% url 'statistics_authentication_twitterv01_configure' %}" method="POST">
+        {% csrf_token %}
+        {% for element in controller.config.elements %}
+            {% if element.type == 'text' %}
+                {% include 'django_odc/forms/textbox.html' %}
+            {% endif %}
+            {% if element.type == 'hidden' %}
+                <input type="hidden" name="{{ element.name }}" value="{{ element.value }}" />
+            {% endif %}
+        {% endfor %}
+        <button class="btn" id="twitterv01-authentication-config-submit-button">
+            <i class="icon-play"></i> Save and continue
+        </button>
+    </form>
+</div>

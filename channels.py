@@ -13,6 +13,7 @@ from django.core.validators import URLValidator
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils.text import Truncator
+import tweepy
 from django_odc.objects import ContentItemAuthor, ContentItem
 from django_odc.utils import format_error
 
@@ -75,8 +76,8 @@ class TwitterStreamPostChannel(_BaseChannel):
             '64': _base_image_url + '/64/social_twitter_box_blue.png',
             '128': _base_image_url + '/128/social_twitter_box_blue.png'
         },
-        'display_name_short': 'Tweet Stream',
-        'display_name_full': 'Twitter Streaming Adapter',
+        'display_name_short': '[Advanced] Tweet Stream',
+        'display_name_full': '[Advanced] Twitter Streaming Adapter',
         'description_short': 'Set up a Streaming POST Adapter for tweets from Twitter',
         'description_full': 'Use this source to create a POST adapter that you can use to push a stream of tweets to.',
         'config': {
@@ -584,4 +585,196 @@ class FacebookPublicSearchChannel(_BaseChannel):
             content.link = link_format % (id.split('_')[0], id.split('_')[1])
         content.text = [message]
         content.created = created
+        return content
+
+
+class TwitterPublicSearchChannel(_BaseChannel):
+    _base_image_url = 'http://cdn1.iconfinder.com/data/icons/yooicons_set01_socialbookmarks'
+    _configuration = {
+        'type': 'twitter_public_search_v01',
+        'data_type': 'content_v01',
+        'aggregation_type': 'polling',
+        'images': {
+            '16': _base_image_url + '/16/social_twitter_box_blue.png',
+            '24': _base_image_url + '/24/social_twitter_box_blue.png',
+            '32': _base_image_url + '/32/social_twitter_box_blue.png',
+            '48': _base_image_url + '/48/social_twitter_box_blue.png',
+            '64': _base_image_url + '/64/social_twitter_box_blue.png',
+            '128': _base_image_url + '/128/social_twitter_box_blue.png'
+        },
+        'display_name_short': 'Twitter Search',
+        'display_name_full': 'Twitter Search',
+        'description_short': 'Search public tweets.',
+        'description_full': 'Use this source to search the public tweet stream of Twitter',
+        'config': {
+            'elements': [
+                {
+                    'name': 'search',
+                    'display_name': 'Search Term(s)',
+                    'type': 'text',
+                    'help_message': 'Only numbers and characters separated by spaces (Note that all terms use '
+                                    'a logical AND).',
+                    'value': ''
+                }
+            ]
+        }
+    }
+
+    @classmethod
+    def ValidateAndReturnErrors(cls, configuration):
+        # Extract the elements from the config
+        elements = configuration['config']['elements']
+        # Get the search terms for checking
+        search_terms = [e for e in elements if e['name'] == 'search'][0]['value']
+        # If there are no search terms or they are not valid
+        if not search_terms or [c for c in search_terms if not c.isalnum() and c != ' ']:
+            # Return an error saying so
+            return ['The search term(s) you entered are not valid.']
+        # Check that there is a valid oauth store entry
+        from django_odc.authentication import TwitterV01AuthenticationController
+        auth_controller = TwitterV01AuthenticationController.GetOrCreate()
+        if auth_controller.status() != 'active':
+            return ['The OAuth authentication for this channel is not set up.']
+        # No errors = pass
+        return []
+
+    def run_test(self, source, configuration, test_result_id):
+        # Validate the config to ensure its ok - it should be but who knows :)
+        errors = TwitterPublicSearchChannel.ValidateAndReturnErrors(configuration)
+        #If these are any errors then set the test in error state
+        if errors:
+            # Build the status messages
+            status_messages = {'errors': ['This source is not correctly configured.'], 'infos': []}
+            # Update the test via the source object
+            return source.update_test_data(test_result_id, 'error', status_messages)
+        # Extract the elements from the config
+        elements = configuration['config']['elements']
+        # Get the search terms
+        search_terms = [e for e in elements if e['name'] == 'search'][0]['value']
+        # Get the items
+        try:
+            from django_odc.authentication import TwitterV01AuthenticationController
+            twitter_api = TwitterV01AuthenticationController.GetOrCreate().return_authorized_wrapper()
+            results = twitter_api.search(q=search_terms, lang='en', results_type='recent', rpp=10)
+        except Exception, e:
+            # Format the error
+            error = format_error(e, sys.exc_info())
+            # If there is an error even getting the results
+            return source.update_test_data(
+                test_result_id,
+                'error',
+                {'errors': ['There was an error getting data from twitter.', error], 'infos': []})
+        # check that there are results
+        if not results:
+            return source.update_test_data(
+                test_result_id,
+                'error',
+                {'errors': ['There were no results returned from Twitter.'], 'infos': []})
+        # Array to hold the parsed content
+        parsed_results = []
+        for r in results:
+            try:
+                parsed_item = self._parse_incoming_tweet(r, source)
+                if parsed_item.title:
+                    parsed_results.append(parsed_item)
+            except Exception, e:
+                # Format the error
+                error = format_error(e, sys.exc_info())
+                # If there is an error even getting the results
+                return source.update_test_data(
+                    test_result_id,
+                    'error',
+                    {'errors': ['Not all of the tweets could be parsed.', error], 'infos': []})
+        # Update the source with the results and include any bozo errors as info messages
+        return source.update_test_data(
+            test_result_id,
+            'passed',
+            {'errors': [], 'infos': []},
+            parsed_results)
+
+    def run_polling_aggregation(self, source, configuration, run_record):
+        # Validate the config to ensure its ok - it should be but who knows :)
+        errors = TwitterPublicSearchChannel.ValidateAndReturnErrors(configuration)
+        #If these are any errors then set the test in error state
+        if errors:
+            # Build the status messages
+            status_messages = {'errors': ['This source is not correctly configured.'], 'infos': []}
+            # Update the test via the source object
+            return run_record.update('error', status_messages)
+        # Extract the elements from the config
+        elements = configuration['config']['elements']
+        # Get the search terms
+        search_terms = [e for e in elements if e['name'] == 'search'][0]['value']
+        # Get the items
+        try:
+            from django_odc.authentication import TwitterV01AuthenticationController
+            twitter_api = TwitterV01AuthenticationController.GetOrCreate().return_authorized_wrapper()
+            raw_results = twitter_api.search(q=search_terms, lang='en', results_type='recent', rpp=100)
+        except Exception, e:
+            # Format the error
+            error = format_error(e, sys.exc_info())
+            # If there is an error even getting the results
+            return run_record.update(
+                'error',
+                {'errors': ['There was an error getting data from Twitter.', error], 'infos': []})
+        # check that there are results
+        if not raw_results:
+            return run_record.update(
+                'error',
+                {'errors': ['There were no results returned from Twitter.'], 'infos': []})
+        # Array to hold the parsed content
+        results = []
+        for r in raw_results:
+            try:
+                parsed_item = self._parse_incoming_tweet(r, source)
+                if parsed_item.title:
+                    results.append(parsed_item)
+            except Exception, e:
+                # Format the error
+                error = format_error(e, sys.exc_info())
+                # If there is an error even getting the results
+                return run_record.update(
+                    run_record.status,
+                    {'errors': ['Not all of the posts could be parsed.', error], 'infos': []})
+        # If there is a since time in the config
+        if 'since_time' in configuration:
+            try:
+                # Parse the since time as a datetime
+                since_time = datetime.datetime.fromtimestamp(configuration['since_time'])
+                # filter out all duplicates based on time created
+                results = [r for r in results if not r.created or r.created > since_time]
+            except:
+                pass
+        # calculate oldest and youngest
+        oldest = None
+        youngest = None
+        for r in results:
+            if r.created:
+                if not oldest or r.created < oldest:
+                    oldest = r.created
+                if not youngest or r.created > youngest:
+                    youngest = r.created
+        # Update the stats on the run record
+        run_record.record_statistics(total_item=len(results), oldest_datetime=oldest, youngest_datetime=youngest)
+        # update the run record
+        run_record.update('finished', {'errors': [], 'infos': []})
+        # Update the configuration with the new since_time
+        youngest_is_time = (youngest and isinstance(youngest, datetime.datetime))
+        configuration['since_time'] = time.mktime(youngest.timetuple()) if youngest_is_time else time.time()
+        # Return the results
+        return results
+
+    def _parse_incoming_tweet(self, raw_tweet, source):
+        author = ContentItemAuthor()
+        author.display_name = raw_tweet.from_user
+        author.id = raw_tweet.from_user_id
+        author.profile_image_url = raw_tweet.profile_image_url
+        content = ContentItem()
+        content.author = author
+        content.id = md5(raw_tweet.id_str).hexdigest()
+        content.source = source.to_dict()
+        content.title = raw_tweet.text
+        content.link = 'https://twitter.com/#!/%s/status/%s' % (author.display_name, raw_tweet.id_str)
+        content.language = raw_tweet.iso_language_code
+        content.created = raw_tweet.created_at
         return content

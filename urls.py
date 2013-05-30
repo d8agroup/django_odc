@@ -79,6 +79,12 @@ urlpatterns = patterns(
 
     url(r'statistics_run_records$',
         views.statistics_run_records, name='statistics_run_records'),
+    url(r'statistics_authentication_status$',
+        views.statistics_authentication_status, name='statistics_authentication_status'),
+    url(r'statistics_authentication_twitterv01_configure$',
+        views.statistics_authentication_twitterv01_configure, name='statistics_authentication_twitterv01_configure'),
+    url(r'statistics_authentication_twitterv01_oauth$',
+        views.statistics_authentication_twitterv01_oauth, name='statistics_authentication_twitterv01_oauth'),
 
     url(r'aggregate_for_user$',
         views.aggregate_datasets_for_current_user, name='aggregate_datasets_for_current_user'),

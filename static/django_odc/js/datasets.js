@@ -7,9 +7,8 @@
     //Reset the css size
     $.django_odc_datasets.reset_size = function() {
 
-
-        $('#datasets-container:visible').height($(window).height() - 200);
-    }
+        $('#datasets-container:visible').height($(window).height() - 190);
+    };
 
     //Reload the list
     $.django_odc_datasets.reload_datasets = function() {

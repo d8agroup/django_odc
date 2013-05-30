@@ -2,7 +2,8 @@
 .configure-dataset-users-user { padding:10px;}
 .configure-dataset-users-user a { float:right; position:relative; top:5px;}
 
-#statistics { font-size:90%;}
+/* SIDEBAR */
+#statistics { font-size:80%; overflow: hidden; overflow-y: auto; padding-right:10px;}
 #aggregator-status-table { width: 100%; }
 #aggregator-status-table th { text-align: left;}
 #aggregator-status-table .btn { float:right;}
@@ -14,6 +15,8 @@
 .run-record.error {cursor:pointer; }
 .run-record .errors { margin:20px 0 0 20px; }
 .run-record .errors i { margin-left:20px;}
+#authentication-list { min-height: 40px;}
+#authentication-list > table { width:100%; }
 
 /* CONTENT ITEMS */
 .content-item { margin-bottom:10px; border-bottom:1px solid #DDD; padding-bottom:10px; }
@@ -30,7 +33,7 @@
 #confirmation-help-message { float:right; width:300px;}
 
 #channel-types-list { overflow:scroll; overflow-y:hidden; white-space:nowrap; height:168px;}
-.available-channel-type { width:128px; height:128px; overflow:hidden; cursor:pointer; opacity:0.7; float:left; margin:10px;}
+.available-channel-type { width:128px; height:128px; overflow:hidden; cursor:pointer; opacity:0.7; display:inline-block; margin:10px 0;}
 .available-channel-type:hover { opacity:1; }
 #channel-details-instructions { margin:40px 20px 0 20px; font-size:26px; line-height:26px; color:#999; }
 #channel-details-display-name { margin:20px; font-size:36px; line-height:100%; }
@@ -83,6 +86,22 @@ h4 > .btn    { float:right; font-weight:normal; position:relative; bottom:3px; }
 .no-dataset-sources                     { margin-top:30px; white-space:normal;}
 .no-dataset-sources i.icon-arrow-up     { float:right; font-size:58px; padding-right:15px; color:#888; }
 .no-dataset-sources-message             { width:60%; padding:5px 10px; margin-left:10%;}
+
+/* TWITTER OAUTH MODAL */
+#twitterv01-authentication-steps { border-bottom:1px solid #DDD; padding-bottom:10px;}
+.twitterv01-authentication-step { text-align:center; color:#DDD; width:110px; float:left;}
+.twitterv01-authentication-step.active { color:#000; }
+#twitterv01-authentication-steps .number { font-size:30px; position:relative; top:5px; padding-right:10px;}
+#twitterv01-authentication-content { height: 250px; position:relative; overflow: hidden; overflow-y: auto;}
+#twitterv01-authentication-content .state-error { width:90%;; margin:20px auto}
+#twitterv01-authentication-config-submit-button { margin-top:20px; }
+#twitterv01-authentication-oauth .row-fluid { margin-bottom:10px;}
+#twitterv01-authentication-oauth .number { background-color:#DDD; display:block; font-size:40px; line-height:70px; text-align:center;}
+#twitterv01-authentication-oauth-authorize-button { font-size:30px; line-height:60px;}
+#twitterv01-authentication-oauth-submit-button { margin-top:10px;}
+
+
+
 
 /* CONFIGURE POST ADAPTER SOURCE MODAL */
 #configure-post-adapter-source-indicator { border-bottom:1px solid #DDD; padding-bottom:10px;}
