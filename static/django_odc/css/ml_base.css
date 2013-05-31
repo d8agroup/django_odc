@@ -174,3 +174,5 @@ a { cursor: pointer; }
 .label { padding:5px 10px; }
 .label a { color:inherit; }
 .label i { margin:0 2px; }
+.dropdown-menu { padding:0; }
+.dropdown-menu .container-with-header { margin:0;}
