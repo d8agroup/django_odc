@@ -197,7 +197,7 @@ class FacebookStreamPostChannel(_BaseChannel):
             '64': _image_url_base + '/64/social_facebook_box_blue.png',
             '128': _image_url_base + '/128/social_facebook_box_blue.png'
         },
-        'display_name_short': '[Advanced] Facebook Posts Stream',
+        'display_name_short': '[Advanced] Facebook Stream',
         'display_name_full': '[Advanced] Facebook Bulk Upload Adapter',
         'description_short': 'Set up a Streaming POST Adapter for posts from Facebook',
         'description_full': 'Use this source to create a POST adapter that you can use to push a stream of facebook'
