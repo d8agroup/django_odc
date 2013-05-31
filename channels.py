@@ -183,6 +183,125 @@ class TwitterStreamPostChannel(_BaseChannel):
         return parsed_data
 
 
+class FacebookStreamPostChannel(_BaseChannel):
+    _image_url_base = 'http://cdn1.iconfinder.com/data/icons/yooicons_set01_socialbookmarks'
+    _configuration = {
+        'type': 'facebook_post_v01',
+        'data_type': 'content_v01',
+        'aggregation_type': 'post_adapter',
+        'images': {
+            '16': _image_url_base + '/16/social_facebook_box_blue.png',
+            '24': _image_url_base + '/24/social_facebook_box_blue.png',
+            '32': _image_url_base + '/32/social_facebook_box_blue.png',
+            '48': _image_url_base + '/48/social_facebook_box_blue.png',
+            '64': _image_url_base + '/64/social_facebook_box_blue.png',
+            '128': _image_url_base + '/128/social_facebook_box_blue.png'
+        },
+        'display_name_short': '[Advanced] Facebook Posts Stream',
+        'display_name_full': '[Advanced] Facebook Bulk Upload Adapter',
+        'description_short': 'Set up a Streaming POST Adapter for posts from Facebook',
+        'description_full': 'Use this source to create a POST adapter that you can use to push a stream of facebook'
+                            ' posts to.',
+        'config': {
+            'elements': []
+        }
+    }
+
+    def _parse_incoming_post(self, raw_post, source):
+        author = ContentItemAuthor()
+        author.display_name = raw_post['user_name']
+        author.id = raw_post['user_id']
+        content = ContentItem()
+        content.author = author
+        content.id = md5(raw_post['id']).hexdigest()
+        content.source = source.to_dict()
+        content.title = raw_post['message']
+        content.link = raw_post['link']
+        content.created = datetime.datetime.strptime(raw_post['created_time'], '%Y-%m-%dT%H:%M:%S+0000')
+        return content
+
+    def update_test_with_results(self, source, configuration, test_result_id, raw_data):
+        test = source.sourcetestresult_set.get(id=test_result_id)
+        try:
+            posts = json.loads(raw_data)
+        except Exception, e:
+            error = format_error(e, sys.exc_info())
+            test.save(status='error', status_messages={'errors': ['The json was malformed', error], 'infos': []})
+            return False
+        if not posts or not isinstance(posts, list):
+            test.save(status='error', status_messages={'errors': ['The posts array was empty'], 'infos': []})
+            return False
+        parsed_data = []
+        for post in posts:
+            try:
+                parsed_data.append(self._parse_incoming_post(post, source))
+            except Exception, e:
+                error = format_error(e, sys.exc_info())
+                test.save(
+                    status='error',
+                    status_messages={
+                        'errors': ['At least one of the posts could not be parsed', error], 'infos': []})
+                return False
+        test.save(results=parsed_data)
+        # If the limit has been reached
+        limit = 2
+        number_or_results = len(test.results)
+        if number_or_results >= limit:
+            # Set the test to passed with a nice info message
+            test.save(
+                status='passed',
+                status_messages={
+                    'errors': [],
+                    'infos': ['This test passed as %i posts were parsed without error.' % number_or_results]})
+        return True
+
+    def run_test(self, source, configuration, test_result_id):
+        # If there is no content after seconds
+        seconds = 60
+        time.sleep(seconds)
+        # Check if the test is not working and quit with an error if this is the case
+        current_test = source.get_current_test_data_results()
+        if current_test.status == 'running' and not current_test.results:
+            source.update_test_data(
+                test_result_id,
+                'error',
+                {'errors': ['This test ran for %i seconds without receiving and content' % seconds], 'infos': []})
+
+    def receive_post_data(self, source, configuration, run_record, raw_data):
+        try:
+            posts = json.loads(raw_data)
+        except Exception, e:
+            error = format_error(e, sys.exc_info())
+            run_record.update('error', {'errors': ['The json was malformed', error], 'infos': []})
+            return []
+        if not posts or not isinstance(posts, list):
+            run_record.update('error', {'errors': ['The posts array was empty'], 'infos': []})
+            return []
+        parsed_data = []
+        for post in posts:
+            try:
+                parsed_data.append(self._parse_incoming_post(post, source))
+            except Exception, e:
+                error = format_error(e, sys.exc_info())
+                run_record.update(
+                    'error',
+                    {'errors': ['At least one of the posts could not be parsed', error], 'infos': []})
+                return []
+        # calculate oldest and youngest
+        oldest = None
+        youngest = None
+        for r in parsed_data:
+            if r.created:
+                if not oldest or r.created < oldest:
+                    oldest = r.created
+                if not youngest or r.created > youngest:
+                    youngest = r.created
+        # Update the stats on the run record
+        run_record.record_statistics(total_item=len(parsed_data), oldest_datetime=oldest, youngest_datetime=youngest)
+        run_record.update('finished', {'errors': [], 'infos': ['%i items collected' % len(parsed_data)]})
+        return parsed_data
+
+
 class FeedChannel(_BaseChannel):
     _configuration = {
         'type': 'feed_v01',

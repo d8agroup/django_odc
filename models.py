@@ -376,6 +376,8 @@ class Source(models.Model):
         all_classes = inspect.getmembers(sys.modules[channels.__name__], inspect.isclass)
         # Filter out any that are not sources
         all_channels = [s[1]() for s in all_classes if cls.is_channel_regex.search(s[0])]
+        # Sort them by the config to show advanced ones at the end
+        all_channels = sorted(all_channels, key=lambda s: s.configuration['display_name_short'].startswith('[Advance'))
         return all_channels
 
     @classmethod
