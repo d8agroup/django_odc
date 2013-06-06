@@ -829,7 +829,8 @@ class TwitterPublicSearchChannel(_BaseChannel):
         try:
             from django_odc.authentication import TwitterV01AuthenticationController
             twitter_api = TwitterV01AuthenticationController.GetOrCreate().return_authorized_wrapper()
-            raw_results = twitter_api.search(q=search_terms, lang='en', results_type='recent', rpp=100)
+            # results = twitter_api.search(q=search_terms, lang='en', results_type='recent', rpp=10)
+            raw_results = twitter_api.search(q=search_terms, lang='en', results_type='recent', count=10)
         except Exception, e:
             # Format the error
             error = format_error(e, sys.exc_info())
@@ -838,13 +839,13 @@ class TwitterPublicSearchChannel(_BaseChannel):
                 'error',
                 {'errors': ['There was an error getting data from Twitter.', error], 'infos': []})
         # check that there are results
-        if not raw_results:
+        if not raw_results or not raw_results.get('statuses', []):
             return run_record.update(
                 'error',
                 {'errors': ['There were no results returned from Twitter.'], 'infos': []})
         # Array to hold the parsed content
         results = []
-        for r in raw_results:
+        for r in raw_results['statuses']:
             try:
                 parsed_item = self._parse_incoming_tweet(r, source)
                 if parsed_item.title:
