@@ -11,6 +11,7 @@ from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
+from twython import Twython
 from django_odc.authentication import TwitterV01AuthenticationController
 
 from django_odc.models import Dataset, Source, SourceTestResult, UserGroup
@@ -728,17 +729,21 @@ def statistics_authentication_twitterv01_oauth(request):
     template_data = {'errors': [], 'controller': controller}
     app_key = [e for e in controller.config['elements'] if e['name'] == 'app_key'][0]['value']
     app_secret = [e for e in controller.config['elements'] if e['name'] == 'app_secret'][0]['value']
-    auth = tweepy.OAuthHandler(str(app_key), str(app_secret))
+    # auth = tweepy.OAuthHandler(str(app_key), str(app_secret))
     if 'pin' in request.POST:
         token = request.session.get('request_token', '')
-        auth.set_request_token(token[0], token[1])
+        auth = Twython(app_key, app_secret, token[0], token[1])
+        # auth.set_request_token(token[0], token[1])
         try:
-            auth.get_access_token(request.POST.get('pin'))
+            # auth.get_access_token(request.POST.get('pin'))
+            auth_tokens = auth.get_authorized_tokens(request.POST.get('pin'))
             for element in controller.config['elements']:
                 if element['name'] == 'oauth_token':
-                    element['value'] = auth.access_token.key
+                    # element['value'] = auth.access_token.key
+                    element['value'] = auth_tokens.get('oauth_token')
                 if element['name'] == 'oauth_secret':
-                    element['value'] = auth.access_token.secret
+                    # element['value'] = auth.access_token.secret
+                    element['value'] = auth_tokens.get('oauth_token_secret')
             controller.save()
             request.session.pop('request_token', '')
             return_data = {
@@ -750,11 +755,15 @@ def statistics_authentication_twitterv01_oauth(request):
             template_data['errors'].append(
                 'There was an error using the PIN you supplied, please try authorising again.')
     else:
+        auth = Twython(app_key, app_secret)
         try:
-            redirect_url = auth.get_authorization_url()
-            request.session['request_token'] = (auth.request_token.key, auth.request_token.secret)
-            template_data['redirect_url'] = redirect_url
-        except tweepy.TweepError:
+            # redirect_url = auth.get_authorization_url()
+            auth_props = auth.get_authentication_tokens()
+            # request.session['request_token'] = (auth.request_token.key, auth.request_token.secret)
+            request.session['request_token'] = (auth_props.get('oauth_token'), auth_props.get('oauth_token_secret'))
+            template_data['redirect_url'] = auth_props.get('auth_url')
+        # except tweepy.TweepError:
+        except Exception:
             template_data['errors'].append(
                 'There was a problem with the details you supplied, it could be that twitter is down but please '
                 'check the application key and secret and try again.')

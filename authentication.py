@@ -1,5 +1,6 @@
 from copy import deepcopy
 import tweepy
+from twython import Twython
 from django_odc.models import AuthenticationStorage
 
 
@@ -84,8 +85,9 @@ class TwitterV01AuthenticationController(_BaseAuthenticationController):
         app_secret = [e for e in self.config['elements'] if e['name'] == 'app_secret'][0]['value']
         oauth_token = [e for e in self.config['elements'] if e['name'] == 'oauth_token'][0]['value']
         oauth_secret = [e for e in self.config['elements'] if e['name'] == 'oauth_secret'][0]['value']
-        auth = tweepy.OAuthHandler(app_key, app_secret)
-        auth.set_access_token(oauth_token, oauth_secret)
-        return tweepy.API(auth_handler=auth)
+        # auth = tweepy.OAuthHandler(app_key, app_secret)
+        # auth.set_access_token(oauth_token, oauth_secret)
+        return Twython(app_key, app_secret, oauth_token, oauth_secret)
+        # return tweepy.API(auth_handler=auth)
 
 

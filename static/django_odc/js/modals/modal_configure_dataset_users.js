@@ -92,13 +92,17 @@
             $.django_odc_modal_configure_dataset_users.set_dataset_id(dataset_id);
 
             //Show loading
-            container.find('#configure-dataset-users-user-list').ml_themes_loading('Loading Users');
+            container.find('#configure-dataset-users-user-list').django_odc_loading('apply', 'Loading Users');
 
             //Build the url
             var url = URL_DATASET_USERS_CONFIGURE.replace('DATASET_ID', dataset_id);
 
             //Reload the content
-            container.find('#configure-dataset-users-user-list').load(url, function(){
+            $.get(url, function(template){
+
+                container.find('#configure-dataset-users-user-list')
+                    .django_odc_loading('remove')
+                    .html(template);
 
                 container.find('.add-this-user-to-dataset-button').click(function(){
 
@@ -127,6 +131,7 @@
                         $.django_odc_modal_configure_dataset_users.close()
                     })
                 })
+
             });
 
             //Open the dialog

@@ -774,7 +774,8 @@ class TwitterPublicSearchChannel(_BaseChannel):
         try:
             from django_odc.authentication import TwitterV01AuthenticationController
             twitter_api = TwitterV01AuthenticationController.GetOrCreate().return_authorized_wrapper()
-            results = twitter_api.search(q=search_terms, lang='en', results_type='recent', rpp=10)
+            # results = twitter_api.search(q=search_terms, lang='en', results_type='recent', rpp=10)
+            results = twitter_api.search(q=search_terms, lang='en', results_type='recent', count=10)
         except Exception, e:
             # Format the error
             error = format_error(e, sys.exc_info())
@@ -784,14 +785,14 @@ class TwitterPublicSearchChannel(_BaseChannel):
                 'error',
                 {'errors': ['There was an error getting data from twitter.', error], 'infos': []})
         # check that there are results
-        if not results:
+        if not results or not results.get('statuses', []):
             return source.update_test_data(
                 test_result_id,
                 'error',
                 {'errors': ['There were no results returned from Twitter.'], 'infos': []})
         # Array to hold the parsed content
         parsed_results = []
-        for r in results:
+        for r in results['statuses']:
             try:
                 parsed_item = self._parse_incoming_tweet(r, source)
                 if parsed_item.title:
@@ -885,15 +886,15 @@ class TwitterPublicSearchChannel(_BaseChannel):
 
     def _parse_incoming_tweet(self, raw_tweet, source):
         author = ContentItemAuthor()
-        author.display_name = raw_tweet.from_user
-        author.id = raw_tweet.from_user_id
-        author.profile_image_url = raw_tweet.profile_image_url
+        author.display_name = raw_tweet.get('user', {}).get('screen_name', None)
+        author.id = raw_tweet.get('user', {}).get('id_str', None)
+        author.profile_image_url = raw_tweet.get('user', {}).get('profile_image_url', None)
         content = ContentItem()
         content.author = author
-        content.id = md5(raw_tweet.id_str).hexdigest()
+        content.id = md5(raw_tweet.get('id_str')).hexdigest()
         content.source = source.to_dict()
-        content.title = raw_tweet.text
-        content.link = 'https://twitter.com/#!/%s/status/%s' % (author.display_name, raw_tweet.id_str)
-        content.language = raw_tweet.iso_language_code
-        content.created = raw_tweet.created_at
+        content.title = raw_tweet.get('text')
+        content.link = 'https://twitter.com/#!/%s/status/%s' % (author.display_name, raw_tweet.get('id_str'))
+        content.language = raw_tweet.get('lang', None)
+        content.created = datetime.datetime.strptime(raw_tweet.get('created_at'), '%a %b %d %H:%M:%S +0000 %Y')
         return content
