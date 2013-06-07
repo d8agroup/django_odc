@@ -829,7 +829,7 @@ class TwitterPublicSearchChannel(_BaseChannel):
             from django_odc.authentication import TwitterV01AuthenticationController
             twitter_api = TwitterV01AuthenticationController.GetOrCreate().return_authorized_wrapper()
             # results = twitter_api.search(q=search_terms, lang='en', results_type='recent', rpp=10)
-            raw_results = twitter_api.search(q=search_terms, lang='en', results_type='recent', count=10)
+            raw_results = twitter_api.search(q=search_terms, lang='en', results_type='recent', count=100)
         except Exception, e:
             # Format the error
             error = format_error(e, sys.exc_info())

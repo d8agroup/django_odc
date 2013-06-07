@@ -170,6 +170,20 @@ a { cursor: pointer; }
 .ui-dialog-titlebar { display:none; }
 .ui-dialog { border:1px solid #AAA; padding:0;}
 .ui-dialog .container-with-header { padding:0; margin:0;}
+.ui-slider .ui-slider-range {
+    background-color: #e6e6e6;
+    background-repeat: no-repeat;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), color-stop(25%, #ffffff), to(#e6e6e6));
+    background-image: -webkit-linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);
+    background-image: -moz-linear-gradient(top, #ffffff, #ffffff 25%, #e6e6e6);
+    background-image: -ms-linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);
+    background-image: -o-linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);
+    background-image: linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+    border-color: #ddd #aaa #888;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+}
 .btn-danger, .btn-primary, .btn-info { color:#FFF !important; }
 .label { padding:5px 10px; }
 .label a { color:inherit; }

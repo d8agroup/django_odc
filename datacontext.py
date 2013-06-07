@@ -77,12 +77,13 @@ class Solr4xDataContent(_BaseDataContext):
         sort_data = search_data.get('sort', {})
         sort = '%s %s' % (sort_data.get('field', 'created'), sort_data.get('direction', 'desc'))
         raw_results = connection.query(
-            q=q, facet='on', fq=fq, rows=rows, facet_pivot=pivot, sort=sort, facet_field=facet_field)
+            q=q, facet='on', fq=fq, rows=rows, facet_pivot=pivot,
+            sort=sort, facet_field=facet_field)
         results = {
             'items': [self._parse_data_from_solr(r) for r in raw_results.results],
             'pivots': self._parse_pivots_from_solr(raw_results.facet_counts.get('facet_pivot', {})),
-            'facets': self._parse_facets_from_solr(raw_results.facet_counts.get('facet_fields', {}))
-        }
+            'facets': self._parse_facets_from_solr(raw_results.facet_counts.get('facet_fields', {})),
+            'pagination': self._parse_pagination_from_solr(raw_results)}
 
         return results
 
@@ -142,6 +143,9 @@ class Solr4xDataContent(_BaseDataContext):
             for metadata in i.metadata:
                 parsed_data[metadata['key']] = metadata['value']
             return parsed_data
+
+    def _parse_pagination_from_solr(self, search_results):
+        return {'total_count': search_results._numFound}
 
     def _run_delete_if_needed(self, source, connection):
         # TODO: PER SOURCE LIMIT - this is hard coded for now
