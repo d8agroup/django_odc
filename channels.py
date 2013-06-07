@@ -13,7 +13,6 @@ from django.core.validators import URLValidator
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils.text import Truncator
-import tweepy
 from django_odc.objects import ContentItemAuthor, ContentItem
 from django_odc.utils import format_error
 
@@ -347,7 +346,7 @@ class FeedChannel(_BaseChannel):
             # Use django to validate the url for format
             url_validator = URLValidator()
             url_validator(feed_url)
-        except ValidationError, e:
+        except ValidationError:
             # Return a error is format does not pass
             return ['The address you entered does not look like a url.']
         try:
@@ -356,7 +355,7 @@ class FeedChannel(_BaseChannel):
             # If there is no feed then throw an error
             if not feed['feed'] or not feed['entries']:
                 raise Exception()
-        except Exception, e:
+        except Exception:
             # return an error saying that a feed does not exist at that url
             return ['The address you provided seems to be for a web page, not a feed (have you tried copying '
                     'it from your browsers address bar?). ']
@@ -380,7 +379,7 @@ class FeedChannel(_BaseChannel):
         try:
             # Create a new feed from the url
             feed = feedparser.parse(feed_url)
-        except Exception, e:
+        except Exception:
             # If there is a feed level error
             return source.update_test_data(
                 test_result_id,
@@ -439,7 +438,7 @@ class FeedChannel(_BaseChannel):
         try:
             # Create a new feed from the url
             feed = feedparser.parse(feed_url)
-        except Exception, e:
+        except Exception:
             # If there is a feed level error update the run record and quit
             run_record.update('error', {'errors': ['This source is not correctly configured.'], 'infos': []})
             return None
@@ -498,7 +497,7 @@ class FeedChannel(_BaseChannel):
         try:
             timestamp = time.mktime(item.get('published_parsed'))
             created = datetime.datetime.fromtimestamp(timestamp)
-        except Exception, e:
+        except Exception:
             pass
         author = ContentItemAuthor()
         author.display_name = item.get('author', '')
@@ -685,23 +684,23 @@ class FacebookPublicSearchChannel(_BaseChannel):
     def _parse_fb_item(self, item, source):
         created = None
         message = Truncator(strip_tags(item.get('message', ''))).words(50, truncate=' ...')
-        id = item.get('id', None)
+        item_id = item.get('id', None)
         link_format = 'http://www.facebook.com/profile.php?id=%s&v=wall&story_fbid=%s'
         try:
             timestamp = item.get('created_time')
             created = datetime.datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S+0000')
-        except Exception, e:
+        except Exception:
             pass
         author = ContentItemAuthor()
         author.display_name = item.get('from', {}).get('name', None)
         author.id = item.get('from', {}).get('id', None)
         content = ContentItem()
-        content.id = md5(id or ('%s' % (time.time() + randint(0, 1000)))).hexdigest()
+        content.id = md5(item_id or ('%s' % (time.time() + randint(0, 1000)))).hexdigest()
         content.source = source.to_dict()
         content.author = author
         content.title = Truncator(message).words(10, truncate=' ...')
-        if id:
-            content.link = link_format % (id.split('_')[0], id.split('_')[1])
+        if item_id:
+            content.link = link_format % (item_id.split('_')[0], item_id.split('_')[1])
         content.text = [message]
         content.created = created
         return content
