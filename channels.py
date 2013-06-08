@@ -685,7 +685,7 @@ class FacebookPublicSearchChannel(_BaseChannel):
         created = None
         message = Truncator(strip_tags(item.get('message', ''))).words(50, truncate=' ...')
         item_id = item.get('id', None)
-        link_format = 'http://www.facebook.com/profile.php?id=%s&v=wall&story_fbid=%s'
+        link_format = 'http://www.facebook.com/%s'
         try:
             timestamp = item.get('created_time')
             created = datetime.datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S+0000')
@@ -700,7 +700,7 @@ class FacebookPublicSearchChannel(_BaseChannel):
         content.author = author
         content.title = Truncator(message).words(10, truncate=' ...')
         if item_id:
-            content.link = link_format % (item_id.split('_')[0], item_id.split('_')[1])
+            content.link = link_format % (item_id.split('_')[1])
         content.text = [message]
         content.created = created
         return content
