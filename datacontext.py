@@ -68,7 +68,8 @@ class Solr4xDataContent(_BaseDataContext):
 
     def run_query(self, search_data):
         connection = solr.SolrConnection(self.solr_url)
-        q = "*:*"
+        keywords = search_data.get('keywords', '')
+        q = "*:*" if not keywords else 'text_search:%s' % keywords
         fq = [" OR ".join('source_id:%s' % s['guid'] for s in search_data.get('sources', []))]
         fq += search_data.get('filters', [])
         facet_field = search_data.get('facets', [])
