@@ -4,6 +4,7 @@ import json
 import re
 import sys
 import uuid
+from django.conf import settings
 
 from django.contrib.auth.models import User
 from django.core.exceptions import MultipleObjectsReturned
@@ -13,8 +14,7 @@ from django.utils.timezone import now
 import channels
 from django_odc.objects import ContentItem
 from django_odc.settingsbridge import access_settings
-from django_odc.utils import async, format_error
-import services
+from django_odc.utils import async, format_error, dynamic_import
 import datacontext
 
 
@@ -236,7 +236,15 @@ class Dataset(models.Model):
         # Get the dynamic data context init config
         config = access_settings('ODC_DATACONTEXT_INIT_CONFIG')
         # Get the dynamically configured data context
-        data_context = getattr(datacontext, access_settings('ODC_DATACONTEXT_TYPE'))(config)
+        data_context_type = access_settings('ODC_DATACONTEXT_TYPE')
+        # Loop through all the installed apps looking for services
+        for app in settings.INSTALLED_APPS:
+            try:
+                module = dynamic_import(app + ".datacontext")
+                data_context = getattr(module, data_context_type)(config)
+                break
+            except Exception:
+                pass
         return data_context
 
 
@@ -382,8 +390,17 @@ class Source(models.Model):
 
     @classmethod
     def _AllAvailableServices(cls, channel_data_type):
-        # Get a list of the the source classes in the services module
-        all_classes = inspect.getmembers(sys.modules[services.__name__], inspect.isclass)
+        # Build the master list of all possible services
+        all_classes = []
+        # Loop through all the installed apps looking for services
+        for app in settings.INSTALLED_APPS:
+            try:
+                dynamic_import(app + ".services")
+                for c in inspect.getmembers(sys.modules[app + ".services"], inspect.isclass):
+                    if not [_c for _c in all_classes if _c[0] == c[0]]:
+                        all_classes.append(c)
+            except Exception:
+                pass
         # Filter out any that are not services
         all_services = [s[1]() for s in all_classes if cls.is_service_regex.search(s[0])]
         # Filter out any that do not support the provided data type
@@ -511,14 +528,6 @@ class Source(models.Model):
         self.modified = now()
         # Save the object
         super(Source, self).save(*args, **kwargs)
-
-    # def delete(self, force_delete=False, using=None):
-    #     # Intercept the delete signal and mark as deleted
-    #     if force_delete:
-    #         super(Source, self).delete(using)
-    #     else:
-    #         self.status = 'deleted'
-    #         self.save(skip_validation=True)
 
     def to_dict(self):
         return {
