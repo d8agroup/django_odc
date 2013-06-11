@@ -66,6 +66,15 @@ class Dataset(models.Model):
             datasets = datasets[:count]
         return datasets
 
+    @classmethod
+    def GetAllForInstance(cls, include_deleted=False):
+        if not include_deleted:
+            datasets = [d for d in Dataset.objects.exclude(status='deleted')]
+        else:
+            datasets = [d for d in Dataset.objects.all()]
+        datasets = sorted(datasets, key=lambda d: d.created, reverse=True)
+        return datasets
+
     @property
     def status_messages(self):
         return json.loads(self._status_messages)
