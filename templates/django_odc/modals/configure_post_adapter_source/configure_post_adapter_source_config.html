@@ -34,6 +34,9 @@
                 {% ifequal element.type 'text' %}
                     {% include 'django_odc/forms/textbox.html' %}
                 {% endifequal %}
+                {% ifequal element.type 'select' %}
+                    {% include 'django_odc/forms/select.html' %}
+                {% endifequal %}
             {% endfor %}
         </fieldset>
     </div>

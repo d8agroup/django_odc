@@ -1,0 +1,17 @@
+<div class="control-group">
+    <label class="control-label">{{ element.display_name }}</label>
+    <div class="controls">
+        <select name="{{ element.name }}">
+            {% for value in element.values %}
+                {% if value == element.value %}
+                    <option value="{{ value }}" selected="SELECTED">{{ value }}</option>
+                {% else %}
+                    <option value="{{ value }}">{{ value }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        {% if element.help_message %}
+            <span class="help-block">{{ element.help_message }}</span>
+        {% endif %}
+    </div>
+</div>

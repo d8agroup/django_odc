@@ -3,6 +3,7 @@ from django.utils.timezone import make_aware, get_current_timezone
 import solr
 from solr.core import utc_from_string
 from django_odc.objects import ContentItemAuthor, ContentItem
+from django_odc.settingsbridge import access_settings
 
 
 class _BaseDataContext(object):
@@ -148,9 +149,18 @@ class Solr4xDataContent(_BaseDataContext):
     def _parse_pagination_from_solr(self, search_results):
         return {'total_count': search_results._numFound}
 
+    def _extract_per_source_limit(self, source):
+        per_source_limit = access_settings('ODC_DEFAULT_SOURCE_LIMIT')
+        for element in source.channel['config']['elements']:
+            if element['name'] == 'limit':
+                try:
+                    per_source_limit = int(element['value'])
+                except:
+                    pass
+        return per_source_limit
+
     def _run_delete_if_needed(self, source, connection):
-        # TODO: PER SOURCE LIMIT - this is hard coded for now
-        per_source_limit = 10000
+        per_source_limit = self._extract_per_source_limit(source)
         results = connection.query('source_id:%s' % source.guid, fl=['id'], sort='created_dt asc', rows=1000)
         number_over_limit = results._numFound - per_source_limit
         if number_over_limit <= 0:

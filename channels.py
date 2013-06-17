@@ -80,7 +80,18 @@ class TwitterStreamPostChannel(_BaseChannel):
         'description_short': 'Set up a Streaming POST Adapter for tweets from Twitter',
         'description_full': 'Use this source to create a POST adapter that you can use to push a stream of tweets to.',
         'config': {
-            'elements': []
+            'elements': [
+                {
+                    'name': 'limit',
+                    'display_name': 'Total Limit',
+                    'type': 'select',
+                    'help_message': 'Please choose the total number of content items that can be held for this '
+                                    'data source. Once this limit is reached, old items will drop off the bottom to '
+                                    'make way for new items.',
+                    'values': ['1000', '10000', '100000', '1000000'],
+                    'value': '10000',
+                }
+            ]
         }
     }
 
@@ -202,7 +213,18 @@ class FacebookStreamPostChannel(_BaseChannel):
         'description_full': 'Use this source to create a POST adapter that you can use to push a stream of facebook'
                             ' posts to.',
         'config': {
-            'elements': []
+            'elements': [
+                {
+                    'name': 'limit',
+                    'display_name': 'Total Limit',
+                    'type': 'select',
+                    'help_message': 'Please choose the total number of content items that can be held for this '
+                                    'data source. Once this limit is reached, old items will drop off the bottom to '
+                                    'make way for new items.',
+                    'values': ['1000', '10000', '100000', '1000000'],
+                    'value': '10000',
+                }
+            ]
         }
     }
 
@@ -327,6 +349,16 @@ class FeedChannel(_BaseChannel):
                     'type': 'text',
                     'help_message': 'This must be the url of the actual feed (the rss or atom items).',
                     'value': ''
+                },
+                {
+                    'name': 'limit',
+                    'display_name': 'Total Limit',
+                    'type': 'select',
+                    'help_message': 'Please choose the total number of content items that can be held for this '
+                                    'data source. Once this limit is reached, old items will drop off the bottom to '
+                                    'make way for new items.',
+                    'values': ['1000', '10000', '100000', '1000000'],
+                    'value': '10000',
                 }
             ]
         }
@@ -539,6 +571,16 @@ class FacebookPublicSearchChannel(_BaseChannel):
                     'help_message': 'Only numbers and characters separated by spaces (Note that all terms use '
                                     'a logical AND).',
                     'value': ''
+                },
+                {
+                    'name': 'limit',
+                    'display_name': 'Total Limit',
+                    'type': 'select',
+                    'help_message': 'Please choose the total number of content items that can be held for this '
+                                    'data source. Once this limit is reached, old items will drop off the bottom to '
+                                    'make way for new items.',
+                    'values': ['1000', '10000', '100000', '1000000'],
+                    'value': '10000',
                 }
             ]
         }
@@ -733,6 +775,16 @@ class TwitterPublicSearchChannel(_BaseChannel):
                     'help_message': 'Only numbers and characters separated by spaces (Note that all terms use '
                                     'a logical AND).',
                     'value': ''
+                },
+                {
+                    'name': 'limit',
+                    'display_name': 'Total Limit',
+                    'type': 'select',
+                    'help_message': 'Please choose the total number of content items that can be held for this '
+                                    'data source. Once this limit is reached, old items will drop off the bottom to '
+                                    'make way for new items.',
+                    'values': ['1000', '10000', '100000', '1000000'],
+                    'value': '10000',
                 }
             ]
         }
