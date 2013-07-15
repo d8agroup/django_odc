@@ -54,13 +54,13 @@ class Dataset(models.Model):
     @classmethod
     def GetForUser(cls, user, include_deleted=False, include_user_group_linked=False, count=None):
         datasets = [d for d in Dataset.objects.filter(user=user)]
-        if not include_deleted:
-            datasets = [d for d in datasets if d.status != 'deleted']
         if include_user_group_linked:
             for user_group in UserGroup.GetForUser(user):
                 for dataset in user_group.get_datasets():
                     if dataset not in datasets:
                         datasets.append(dataset)
+        if not include_deleted:
+            datasets = [d for d in datasets if d.status != 'deleted']
         datasets = sorted(datasets, key=lambda d: d.created, reverse=True)
         if count:
             datasets = datasets[:count]
