@@ -158,12 +158,15 @@ class Dataset(models.Model):
             return
             # Get all sources that are ready to run
         sources = self.source_set.filter(status='active')
+        # If there are non then just break out
+        if not sources:
+            return
         # Filter out ones that are not polling
         sources = [s for s in sources if s.channel['aggregation_type'] == 'polling']
         # If there are non then just break out
         if not sources:
             return
-            # Call the polling aggregate function on each of the sources
+        # Call the polling aggregate function on each of the sources
         for source in sources:
             self.send_data_to_datasetore(source, source.aggregate_polling_source())
 
