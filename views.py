@@ -46,8 +46,9 @@ def aggregate_all(request, api_key):
             aggregated_sources += [s.guid for s in d.source_set.all()]
         return HttpResponse(json.dumps({'time_stamp': '%s' % started, 'status': 'ok'}))
     except Exception, e:
-        error = format_error(e, sys.exc_info())
-        return HttpResponse(json.dumps({'time_stamp': '%s' % started, 'status': 'error', 'errors': [error]}))
+        info = sys.exc_info()
+        error = format_error(e, info)
+        return HttpResponse(json.dumps({'time_stamp': '%s' % started, 'status': 'error', 'errors': [error], 'info': info[2]}))
 
 
 @login_required(login_url='/admin')
