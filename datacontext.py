@@ -30,6 +30,8 @@ class Solr4xDataContent(_BaseDataContext):
         self.solr_url = config['solr_url'].rstrip('/')
 
     def push(self, source, data):
+        if not data:
+            return
         connection = solr.SolrConnection(self.solr_url)
         for d in data:
             try:
