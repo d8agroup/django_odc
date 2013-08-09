@@ -81,14 +81,16 @@ class Solr4xDataContent(_BaseDataContext):
         sort_data = search_data.get('sort', {})
         sort = '%s %s' % (sort_data.get('field', 'created'), sort_data.get('direction', 'desc'))
         facet_limit = search_data.get('facet_limit', 100)
+        stats_field = search_data.get('stats', [])
         raw_results = connection.query(
-            q=q, facet='on', fq=fq, rows=rows, facet_pivot=pivot,
-            sort=sort, facet_field=facet_field, facet_limit=facet_limit, facet_mincount=1)
+            q=q, facet='on', fq=fq, rows=rows, facet_pivot=pivot, stats_field=stats_field,
+            sort=sort, facet_field=facet_field, facet_limit=facet_limit, facet_mincount=1, stats='on')
         results = {
             'items': [self._parse_data_from_solr(r) for r in raw_results.results],
             'pivots': self._parse_pivots_from_solr(raw_results.facet_counts.get('facet_pivot', {})),
             'facets': self._parse_facets_from_solr(raw_results.facet_counts.get('facet_fields', {})),
-            'pagination': self._parse_pagination_from_solr(raw_results)}
+            'pagination': self._parse_pagination_from_solr(raw_results),
+            'stats': self._parse_stats_from_solr(raw_results.stats)}
 
         return results
 
@@ -103,6 +105,9 @@ class Solr4xDataContent(_BaseDataContext):
                 'fields': key.split(','),
                 'values': value})
         return parsed_pivots
+
+    def _parse_stats_from_solr(self, stats):
+        return stats.get('stats_fields', {})
 
     def _parse_facets_from_solr(self, facet_fields):
         parsed_facets = []
