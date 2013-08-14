@@ -539,7 +539,7 @@ class FeedChannel(_BaseChannel):
         content.author = author
         content.title = Truncator(strip_tags(item.get('title', ''))).words(20, truncate=' ...')
         content.link = item.get('link', '')
-        content.text = [Truncator(strip_tags(item.get('description', ''))).words(200, truncate=' ...')]
+        content.text = [Truncator(strip_tags(item.get('description', ''))).words(10000, truncate=' ...')]
         content.created = created
         return content
 
