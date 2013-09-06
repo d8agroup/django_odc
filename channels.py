@@ -761,7 +761,7 @@ class FeedInToSentenceChannel(_BaseChannel):
         for sentence in sentences:
             if sentence:
                 content = ContentItem()
-                content.id = md5(item.get('link', ('%s' % (time.time() + randint(0, 1000))))).hexdigest()
+                content.id = md5('%s' % (time.time() + randint(0, 1000))).hexdigest()
                 content.source = source.to_dict()
                 content.author = author
                 content.title = sentence
