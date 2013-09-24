@@ -841,7 +841,7 @@ class FacebookPublicSearchChannel(_BaseChannel):
         search_terms = [e for e in elements if e['name'] == 'search'][0]['value']
         # Get the fb items
         try:
-            fb = facepy.GraphAPI()
+            fb = facepy.GraphAPI('CAAESCkX9loYBAL0cxgiDUAADSYniLG2bTPxdnPPgdEhJkpmvcNZCW9L8v2h9SgwcxeB8ruxpbXzaTPCCBy9YZBpGZA76XXvJZCkZA6PwsxwmDakb9Iy2zaEoJyuZBBkOmF9AYZCZC9ZAeVw38GuUL6RlcfZAZCcDu3DGKEhMeBZA8n7ZCCzvZAZBcTIORxZB66J6UURG4lEZD')
             results = fb.search(term=search_terms, type='post', limit=5)
         except Exception, e:
             # Format the error
@@ -894,7 +894,7 @@ class FacebookPublicSearchChannel(_BaseChannel):
         search_terms = [e for e in elements if e['name'] == 'search'][0]['value']
         # Get the fb items
         try:
-            fb = facepy.GraphAPI()
+            fb = facepy.GraphAPI('CAAESCkX9loYBAL0cxgiDUAADSYniLG2bTPxdnPPgdEhJkpmvcNZCW9L8v2h9SgwcxeB8ruxpbXzaTPCCBy9YZBpGZA76XXvJZCkZA6PwsxwmDakb9Iy2zaEoJyuZBBkOmF9AYZCZC9ZAeVw38GuUL6RlcfZAZCcDu3DGKEhMeBZA8n7ZCCzvZAZBcTIORxZB66J6UURG4lEZD')
             raw_results = fb.search(term=search_terms, type='post', limit=100)
         except Exception, e:
             # Format the error
@@ -1024,7 +1024,7 @@ class TwitterPublicSearchChannel(_BaseChannel):
         # Get the search terms for checking
         search_terms = [e for e in elements if e['name'] == 'search'][0]['value']
         # If there are no search terms or they are not valid
-        if not search_terms or [c for c in search_terms if not c.isalnum() and c != ' ']:
+        if not search_terms or [c for c in search_terms if not c.isalnum() and c != ' ' and c != ':']:
             # Return an error saying so
             return ['The search term(s) you entered are not valid.']
         # Check that there is a valid oauth store entry
