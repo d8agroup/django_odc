@@ -822,7 +822,7 @@ class FacebookPublicSearchIntoSentenceChannel(_BaseChannel):
         # Get the search terms for checking
         search_terms = [e for e in elements if e['name'] == 'search'][0]['value']
         # If there are no search terms or they are not valid
-        if not search_terms or [c for c in search_terms if not c.isalnum() and c != ' ']:
+        if not search_terms or [c for c in search_terms if not c.isalnum() and c != ' ' and c != '/']:
             # Return an error saying so
             return ['The search term(s) you entered are not valid.']
         # No errors = pass
@@ -830,7 +830,7 @@ class FacebookPublicSearchIntoSentenceChannel(_BaseChannel):
 
     def run_test(self, source, configuration, test_result_id):
         # Validate the config to ensure its ok - it should be but who knows :)
-        errors = FacebookPublicSearchChannel.ValidateAndReturnErrors(configuration)
+        errors = FacebookPublicSearchIntoSentenceChannel.ValidateAndReturnErrors(configuration)
         #If these are any errors then set the test in error state
         if errors:
             # Build the status messages
@@ -844,7 +844,10 @@ class FacebookPublicSearchIntoSentenceChannel(_BaseChannel):
         # Get the fb items
         try:
             fb = facepy.GraphAPI(access_token)
-            results = fb.search(term=search_terms, type='post', limit=5)
+            if search_terms.startswith('/'):
+                results = fb.get(search_terms, limit=5)
+            else:
+                results = fb.search(term=search_terms, type='post', limit=5)
         except Exception, e:
             # Format the error
             error = format_error(e, sys.exc_info())
@@ -883,7 +886,7 @@ class FacebookPublicSearchIntoSentenceChannel(_BaseChannel):
 
     def run_polling_aggregation(self, source, configuration, run_record):
         # Validate the config to ensure its ok - it should be but who knows :)
-        errors = FacebookPublicSearchChannel.ValidateAndReturnErrors(configuration)
+        errors = FacebookPublicSearchIntoSentenceChannel.ValidateAndReturnErrors(configuration)
         #If these are any errors then set the test in error state
         if errors:
             # Build the status messages
@@ -897,7 +900,10 @@ class FacebookPublicSearchIntoSentenceChannel(_BaseChannel):
         # Get the fb items
         try:
             fb = facepy.GraphAPI(access_token)
-            raw_results = fb.search(term=search_terms, type='post', limit=100)
+            if search_terms.startswith('/'):
+                raw_results = fb.get(search_terms, limit=100)
+            else:
+                raw_results = fb.search(term=search_terms, type='post', limit=100)
         except Exception, e:
             # Format the error
             error = format_error(e, sys.exc_info())
