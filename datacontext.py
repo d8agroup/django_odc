@@ -74,7 +74,7 @@ class Solr4xDataContent(_BaseDataContext):
         keywords = search_data.get('keywords', '')
         q = "*:*" if not keywords else 'text_search:%s' % keywords
         fq = [" OR ".join('source_id:%s' % s['guid'] for s in search_data.get('sources', []))]
-        fq += search_data.get('filters', [])
+        fq += [f.replace('metadata_tags_s', 'text_search') for f in search_data.get('filters', [])]
         facet_field = search_data.get('facets', [])
         rows = search_data.get('pagination', {}).get('rows', 10)
         pivot = [','.join(p['fields']) for p in search_data.get('pivots', [])]
