@@ -822,7 +822,7 @@ class FacebookPublicSearchIntoSentenceChannel(_BaseChannel):
         # Get the search terms for checking
         search_terms = [e for e in elements if e['name'] == 'search'][0]['value']
         # If there are no search terms or they are not valid
-        if not search_terms or [c for c in search_terms if not c.isalnum() and c != ' ' and c != '/']:
+        if not search_terms or [c for c in search_terms if not c.isalnum() and c != ' ' and c != '/' and c != '.']:
             # Return an error saying so
             return ['The search term(s) you entered are not valid.']
         # No errors = pass

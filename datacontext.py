@@ -25,6 +25,7 @@ class _BaseDataContext(object):
 
 class Solr4xDataContent(_BaseDataContext):
     solr_url = ''
+    exclude_usernames = ['factsinyourface']
 
     def __init__(self, config):
         self.solr_url = config['solr_url'].rstrip('/')
@@ -55,8 +56,8 @@ class Solr4xDataContent(_BaseDataContext):
             if source.status != 'active':
                 continue
             try:
-                max_results = connection.query(q='source_id:%s' % source.guid, rows=1, sort='created desc')
-                min_results = connection.query(q='source_id:%s' % source.guid, rows=1, sort='created asc')
+                max_results = connection.query(q='source_id:%s' % source.guid, rows=1, sort='created desc', fq=['-text_search:%s' % e for e in self.exclude_usernames])
+                min_results = connection.query(q='source_id:%s' % source.guid, rows=1, sort='created asc', fq=['-text_search:%s' % e for e in self.exclude_usernames])
                 stats['total_items'] += max_results._numFound
                 created_max = max_results.results[0]['created']
                 created_min = min_results.results[0]['created']
@@ -74,7 +75,9 @@ class Solr4xDataContent(_BaseDataContext):
         keywords = search_data.get('keywords', '')
         q = "*:*" if not keywords else 'text_search:%s' % keywords
         fq = [" OR ".join('source_id:%s' % s['guid'] for s in search_data.get('sources', []))]
+        fq += search_data.get('filters', [])
         fq += [f.replace('metadata_tags_s', 'text_search') for f in search_data.get('filters', [])]
+        fq += ['-text_search:%s' % e for e in self.exclude_usernames]
         facet_field = search_data.get('facets', [])
         rows = search_data.get('pagination', {}).get('rows', 10)
         pivot = [','.join(p['fields']) for p in search_data.get('pivots', [])]
