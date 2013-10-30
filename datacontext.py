@@ -25,7 +25,7 @@ class _BaseDataContext(object):
 
 class Solr4xDataContent(_BaseDataContext):
     solr_url = ''
-    exclude_usernames = ['factsinyourface']
+    exclude_usernames = ['factsinyourface', "TheWeirdWord", "NotCommonFacts", "UniStudentFacts", "TheQuestioner_", "FactsInYourFace", "HonryFacts", "SexFactsOfLife", "UnusalFactPage", "NewsTweetsDaily", "FactsGuide", "MostSecretFacts", "UberFacts", "spermballs", "FunnyQuotees"]
 
     def __init__(self, config):
         self.solr_url = config['solr_url'].rstrip('/')
